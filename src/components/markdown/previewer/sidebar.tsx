@@ -114,7 +114,6 @@ export default function MarkdownPreviewerSidebar() {
                 render={(
                   <Link
                     to={item.path}
-                    title={item.label}
                     aria-label={item.label}
                     className={buttonVariants({ variant: 'ghost', size: 'icon' })}
                   >
@@ -139,7 +138,6 @@ export default function MarkdownPreviewerSidebar() {
                 render={(
                   <a
                     href={item.url}
-                    title={item.label}
                     aria-label={item.label}
                     target="_blank"
                     rel="noopener noreferrer"

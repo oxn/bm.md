@@ -10,7 +10,6 @@ export function Logo({ as: Component = null }: LogoProps) {
   const link = (
     <Link
       to="/about"
-      title="关于 bm.md"
       aria-label="关于 bm.md"
       className={`
         doto-font text-2xl font-bold tracking-tight text-foreground

@@ -52,6 +52,41 @@ export function FileTabs() {
     }
   }
 
+  const handleTabKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault()
+      const nextIndex = e.key === 'ArrowLeft'
+        ? (currentIndex - 1 + files.length) % files.length
+        : (currentIndex + 1) % files.length
+      const nextFile = files[nextIndex]
+      switchFile(nextFile.id)
+      requestAnimationFrame(() => {
+        tabRefs.current.get(nextFile.id)?.focus()
+      })
+    }
+    else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      const file = files[currentIndex]
+      switchFile(file.id)
+    }
+    else if (e.key === 'Home') {
+      e.preventDefault()
+      const firstFile = files[0]
+      switchFile(firstFile.id)
+      requestAnimationFrame(() => {
+        tabRefs.current.get(firstFile.id)?.focus()
+      })
+    }
+    else if (e.key === 'End') {
+      e.preventDefault()
+      const lastFile = files[files.length - 1]
+      switchFile(lastFile.id)
+      requestAnimationFrame(() => {
+        tabRefs.current.get(lastFile.id)?.focus()
+      })
+    }
+  }
+
   if (!isInitialized) {
     return (
       <div className="flex h-8 shrink-0 items-center border-b bg-muted/30 px-1" />
@@ -65,18 +100,19 @@ export function FileTabs() {
         aria-label="打开的文件"
         className="scrollbar-none flex min-w-0 flex-1 overflow-x-auto"
       >
-        {files.map(file => (
+        {files.map((file, index) => (
           <div
             key={file.id}
             ref={setTabRef(file.id)}
             role="tab"
             aria-selected={file.id === activeFileId}
             tabIndex={file.id === activeFileId ? 0 : -1}
+            onClick={() => switchFile(file.id)}
+            onKeyDown={e => handleTabKeyDown(e, index)}
           >
             <FileTab
               file={file}
               isActive={file.id === activeFileId}
-              onSelect={() => switchFile(file.id)}
               onClose={() => deleteFile(file.id)}
               onRename={name => renameFile(file.id, name)}
             />

@@ -8,12 +8,11 @@ const MAX_NAME_LENGTH = 20
 interface FileTabProps {
   file: MarkdownFile
   isActive: boolean
-  onSelect: () => void
   onClose: () => void
   onRename: (name: string) => void
 }
 
-export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTabProps) {
+export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(file.name)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -37,6 +36,8 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
   }, [editName, file.name, onRename])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // 阻止冒泡，防止外层 tab 的 onKeyDown 拦截
+    e.stopPropagation()
     if (e.key === 'Enter') {
       e.preventDefault()
       handleSave()
@@ -50,7 +51,7 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
-      const dotIndex = editName.lastIndexOf('.')
+      const dotIndex = file.name.lastIndexOf('.')
       if (dotIndex > 0) {
         inputRef.current.setSelectionRange(0, dotIndex)
       }
@@ -58,12 +59,15 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
         inputRef.current.select()
       }
     }
-  }, [isEditing, editName])
+  }, [isEditing, file.name])
 
   if (isEditing) {
     return (
-      <div className="flex h-7 shrink-0 items-center gap-1.5 bg-background px-2">
-        <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+      <div
+        className="flex h-7 shrink-0 items-center gap-1.5 bg-background px-2"
+        onClick={e => e.stopPropagation()}
+      >
+        <FileText className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <input
           ref={inputRef}
           type="text"
@@ -83,8 +87,6 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
 
   return (
     <div
-      role="button"
-      tabIndex={0}
       className={cn(
         `
           group flex h-7 shrink-0 cursor-pointer items-center gap-1.5 px-2
@@ -95,20 +97,9 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
           ? 'bg-accent text-primary'
           : 'text-muted-foreground',
       )}
-      onClick={onSelect}
       onDoubleClick={handleDoubleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onSelect()
-        }
-        else if (e.key === 'F2') {
-          e.preventDefault()
-          handleDoubleClick()
-        }
-      }}
     >
-      <FileText className="size-3.5 shrink-0" />
+      <FileText className="size-3.5 shrink-0" aria-hidden="true" />
       <span className="max-w-48 truncate">{displayName}</span>
       <button
         type="button"
@@ -131,7 +122,7 @@ export function FileTab({ file, isActive, onSelect, onClose, onRename }: FileTab
           onClose()
         }}
       >
-        <X className="size-3" />
+        <X className="size-3" aria-hidden="true" />
       </button>
     </div>
   )
