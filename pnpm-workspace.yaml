@@ -1,6 +1,7 @@
 catalogMode: manual
 
 onlyBuiltDependencies:
+  - core-js
   - esbuild
   - msw
   - simple-git-hooks
