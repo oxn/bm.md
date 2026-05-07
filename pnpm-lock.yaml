@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^8.2.0
@@ -150,6 +146,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.5)
@@ -229,8 +228,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       nitro:
-        specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.1-20260426-013439-feebdc1e(aws4fetch@1.0.20)(dotenv@17.2.3)(jiti@2.6.1)(lru-cache@11.3.5)(rollup@2.80.0)(vite@8.0.10(@types/node@22.19.2)(esbuild@0.27.1)(jiti@2.6.1)(terser@5.46.2)(tsx@4.21.0)(yaml@2.8.3))
+        specifier: ^3.0.260429-beta
+        version: 3.0.260429-beta(aws4fetch@1.0.20)(dotenv@17.2.3)(jiti@2.6.1)(lru-cache@11.3.5)(rollup@2.80.0)(vite@8.0.10(@types/node@22.19.2)(esbuild@0.27.1)(jiti@2.6.1)(terser@5.46.2)(tsx@4.21.0)(yaml@2.8.3))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -5579,8 +5578,8 @@ packages:
   nf3@0.3.16:
     resolution: {integrity: sha512-Gs0xRPpUm2nDkqbi40NJ9g7qDIcjcJzgExiydnq6LAyqhI2jfno8wG3NKTL+IiJsx799UHOb1CnSd4Wg4SG4Pw==}
 
-  nitro-nightly@3.0.1-20260426-013439-feebdc1e:
-    resolution: {integrity: sha512-2YtYtyEyZswSGy7bvp88TlkWijBl+fTWhw1oLKewYh1fI5eOG1e4PLi61mSvF+qPzkrM3a66edtCu59tsF7xEA==}
+  nitro@3.0.260429-beta:
+    resolution: {integrity: sha512-KweLVCUN5X9v9g+4yxAyRcz3FcOlnjmt9FyrAIWDxJETJmNT7I0JV0clgsONjo2nI0U5gwedXYA3RaNtF5XWzg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -13567,7 +13566,7 @@ snapshots:
 
   nf3@0.3.16: {}
 
-  nitro-nightly@3.0.1-20260426-013439-feebdc1e(aws4fetch@1.0.20)(dotenv@17.2.3)(jiti@2.6.1)(lru-cache@11.3.5)(rollup@2.80.0)(vite@8.0.10(@types/node@22.19.2)(esbuild@0.27.1)(jiti@2.6.1)(terser@5.46.2)(tsx@4.21.0)(yaml@2.8.3)):
+  nitro@3.0.260429-beta(aws4fetch@1.0.20)(dotenv@17.2.3)(jiti@2.6.1)(lru-cache@11.3.5)(rollup@2.80.0)(vite@8.0.10(@types/node@22.19.2)(esbuild@0.27.1)(jiti@2.6.1)(terser@5.46.2)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.5(srvx@0.11.15)
