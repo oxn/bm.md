@@ -11,14 +11,15 @@ export function Logo({ as: Component = null }: LogoProps) {
     <Link
       to="/about"
       aria-label="关于 bm.md"
+      translate="no"
       className={`
-        doto-font text-2xl font-bold tracking-tight text-foreground
-        transition-colors
+        doto-font inline-flex items-baseline text-2xl leading-none font-bold
+        tracking-tight text-foreground transition-colors select-none
         hover:text-primary
       `}
     >
       bm
-      <span className="relative -top-1">.</span>
+      <span className="-translate-y-0.5 text-primary">.</span>
       md
     </Link>
   )
