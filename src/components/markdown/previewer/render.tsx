@@ -1,5 +1,6 @@
 import { debounce } from 'es-toolkit'
 import morphdom from 'morphdom'
+import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { usePreviewScrollSync } from '@/components/markdown/hooks/use-scroll-sync'
 import { Phone } from '@/components/mockups/iphone'
@@ -8,6 +9,7 @@ import { getMarkdownLocaleTexts } from '@/lib/locale'
 import { useEditorStore } from '@/stores/editor'
 import { useFilesStore } from '@/stores/files'
 import { PREVIEW_WIDTH_MOBILE, usePreviewStore } from '@/stores/preview'
+import { applyDarkModeToPreviewHtml } from './darkmode'
 import iframeShell from './iframe-shell.html?raw'
 
 const RENDER_DEBOUNCE_MS = 100
@@ -27,6 +29,8 @@ export default function MarkdownRender() {
   const renderedHtml = usePreviewStore(state => state.getRenderedHtml('html'))
   const setRenderedHtml = usePreviewStore(state => state.setRenderedHtml)
   const clearRenderedHtmlCache = usePreviewStore(state => state.clearRenderedHtmlCache)
+  const { resolvedTheme } = useTheme()
+  const previewColorScheme = resolvedTheme === 'dark' ? 'dark' : 'light'
 
   const { iframeRef, onIframeLoad: onScrollSyncLoad } = usePreviewScrollSync({
     enabled: enableScrollSync,
@@ -51,7 +55,12 @@ export default function MarkdownRender() {
     }
 
     const wrapper = document.createElement('body')
-    wrapper.innerHTML = html
+    wrapper.innerHTML = previewColorScheme === 'dark'
+      ? applyDarkModeToPreviewHtml(html)
+      : html
+
+    body.style.backgroundColor = previewColorScheme === 'dark' ? '#111111' : ''
+    body.style.colorScheme = previewColorScheme
 
     morphdom(body, wrapper, {
       childrenOnly: true,
@@ -62,7 +71,7 @@ export default function MarkdownRender() {
         return true
       },
     })
-  }, [iframeRef])
+  }, [iframeRef, previewColorScheme])
 
   const onIframeLoad = useCallback(() => {
     iframeReadyRef.current = true
