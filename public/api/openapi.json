@@ -130,13 +130,11 @@
                   "platform": {
                     "enum": [
                       "html",
-                      "wechat",
-                      "zhihu",
-                      "juejin"
+                      "wechat"
                     ],
                     "type": "string",
                     "default": "html",
-                    "description": "目标发布平台。wechat 会进行微信公众号适配，zhihu 与 juejin 使用通用 HTML 输出"
+                    "description": "目标发布平台。wechat 会进行微信公众号适配，html 使用通用 HTML 输出"
                   },
                   "footnoteLabel": {
                     "type": "string",

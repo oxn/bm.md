@@ -265,27 +265,6 @@ describe('markdown preview rendering', () => {
   })
 })
 
-describe('platform-specific rendering', () => {
-  it('renders for zhihu platform without errors', async () => {
-    const html = await render({
-      markdown: '# 标题\n\n[链接](https://example.com)',
-      platform: 'zhihu',
-    })
-
-    expect(html).toContain('标题')
-  })
-
-  it('renders for juejin platform without errors', async () => {
-    const html = await render({
-      markdown: '# 标题\n\n```js\ncode\n```',
-      platform: 'juejin',
-    })
-
-    expect(html).toContain('标题')
-    expect(html).toContain('code')
-  })
-})
-
 describe('i18n support', () => {
   it('uses custom referenceTitle in footnotes section', async () => {
     const html = await render({

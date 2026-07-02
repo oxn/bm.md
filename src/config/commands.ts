@@ -53,18 +53,6 @@ export const platformConfig = {
     icon: 'Wechat',
     hotkey: { key: '7', shift: true },
   },
-  zhihu: {
-    label: '复制为知乎格式',
-    successMessage: '已复制为知乎格式',
-    icon: 'Zhihu',
-    hotkey: { key: '8', shift: true },
-  },
-  juejin: {
-    label: '复制为掘金格式',
-    successMessage: '已复制为掘金格式',
-    icon: 'Juejin',
-    hotkey: { key: '9', shift: true },
-  },
   html: {
     label: '复制 HTML',
     successMessage: '已复制 HTML',

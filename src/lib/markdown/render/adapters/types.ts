@@ -1,6 +1,6 @@
 import type { Pluggable } from 'unified'
 
-export const platforms = ['html', 'wechat', 'zhihu', 'juejin'] as const
+export const platforms = ['html', 'wechat'] as const
 
 export type Platform = typeof platforms[number]
 

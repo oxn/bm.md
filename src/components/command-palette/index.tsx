@@ -138,16 +138,12 @@ export function CommandPalette() {
   const editorStore = useEditorStore()
 
   const wechatCopy = usePlatformCopy('wechat')
-  const zhihuCopy = usePlatformCopy('zhihu')
-  const juejinCopy = usePlatformCopy('juejin')
   const htmlCopy = usePlatformCopy('html')
 
   const platformCopyGetters = useMemo(() => ({
     wechat: wechatCopy.getHtml,
-    zhihu: zhihuCopy.getHtml,
-    juejin: juejinCopy.getHtml,
     html: htmlCopy.getHtml,
-  }), [wechatCopy.getHtml, zhihuCopy.getHtml, juejinCopy.getHtml, htmlCopy.getHtml])
+  }), [wechatCopy.getHtml, htmlCopy.getHtml])
 
   const isDark = theme === 'dark'
   const isMobileView = previewWidth === PREVIEW_WIDTH_MOBILE
@@ -293,8 +289,6 @@ export function CommandPalette() {
     { key: editorCommandConfig.export.hotkey.key, handler: handleExport },
     { key: editorCommandConfig.format.hotkey.key, shift: editorCommandConfig.format.hotkey.shift, handler: handleFormat },
     { key: platformConfig.wechat.hotkey.key, shift: platformConfig.wechat.hotkey.shift, handler: handleCopyPlatform('wechat') },
-    { key: platformConfig.zhihu.hotkey.key, shift: platformConfig.zhihu.hotkey.shift, handler: handleCopyPlatform('zhihu') },
-    { key: platformConfig.juejin.hotkey.key, shift: platformConfig.juejin.hotkey.shift, handler: handleCopyPlatform('juejin') },
     { key: platformConfig.html.hotkey.key, shift: platformConfig.html.hotkey.shift, handler: handleCopyPlatform('html') },
   ], [handleImport, handleExport, handleFormat, handleCopyPlatform])
 

@@ -11,8 +11,6 @@ const htmlAdapter: PlatformAdapter = {
 const adapters: Record<Platform, PlatformAdapter> = {
   html: htmlAdapter,
   wechat: wechatAdapter,
-  zhihu: { ...htmlAdapter, id: 'zhihu', name: '知乎' },
-  juejin: { ...htmlAdapter, id: 'juejin', name: '掘金' },
 }
 
 export function getAdapterPlugins(platform: Platform, options?: AdapterOptions): Pluggable[] {

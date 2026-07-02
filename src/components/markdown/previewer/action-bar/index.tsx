@@ -11,8 +11,6 @@ export function PreviewerActionBar() {
   return (
     <>
       <CopyButton platform="wechat" />
-      <CopyButton platform="zhihu" />
-      <CopyButton platform="juejin" />
       <CopyButton platform="html" />
       <ExportButton />
       <Separator orientation="vertical" className="mx-2" />

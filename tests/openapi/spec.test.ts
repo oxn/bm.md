@@ -135,7 +135,7 @@ describe('openapi 规范', () => {
 
     expect(markdown.type).toBe('string')
     expect(markdown.maxLength).toBe(MAX_INPUT_SIZE)
-    expect(platform.enum).toEqual(expect.arrayContaining(['html', 'wechat', 'zhihu', 'juejin']))
+    expect(platform.enum).toEqual(['html', 'wechat'])
     expect(properties).toHaveProperty('customCss')
     expect(properties).toHaveProperty('enableFootnoteLinks')
     expect(properties).toHaveProperty('openLinksInNewWindow')

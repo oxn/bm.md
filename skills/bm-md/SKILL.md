@@ -1,6 +1,6 @@
 ---
 name: bm-md
-description: 使用 bm.md 服务进行 Markdown 排版、渲染和格式转换，支持微信公众号、知乎、掘金等多平台
+description: 使用 bm.md 服务进行 Markdown 排版、渲染和格式转换，支持微信公众号与通用 HTML 输出
 ---
 
 # bm.md Markdown 排版技能
@@ -59,7 +59,7 @@ cat article.md | npx -y bmmd render --platform wechat > article.html
 | `customCss`            | string  | 否   | `""`           | 自定义 CSS，选择器需约束在 `#bm-md` 下，如 `#bm-md h1 { color: red }` |
 | `enableFootnoteLinks`  | boolean | 否   | `true`         | 是否将链接转换为脚注形式                                              |
 | `openLinksInNewWindow` | boolean | 否   | `true`         | 是否在新窗口打开链接                                                  |
-| `platform`             | string  | 否   | `html`         | 目标平台：`html`、`wechat`、`zhihu`、`juejin`                         |
+| `platform`             | string  | 否   | `html`         | 目标平台：`html`、`wechat`                                            |
 | `footnoteLabel`        | string  | 否   | `Footnotes`    | GFM 脚注区域标题                                                      |
 | `referenceTitle`       | string  | 否   | `References`   | 外部链接参考区域标题                                                  |
 
@@ -260,15 +260,13 @@ curl -X POST https://bm.md/api/markdown/lint \
 | -------- | ------------------------------ |
 | `html`   | 通用网页，标准 HTML 输出       |
 | `wechat` | 微信公众号，针对微信编辑器优化 |
-| `zhihu`  | 知乎专栏，适配知乎排版规范     |
-| `juejin` | 掘金，适配掘金编辑器           |
 
 ---
 
 ## 使用场景
 
 1. **内容创作者**：将 Markdown 文章一键转换为微信公众号格式，直接粘贴发布
-2. **跨平台发布**：同一份 Markdown 源文件，生成适配不同平台的 HTML
+2. **多端发布**：同一份 Markdown 源文件，生成适配不同输出场景的 HTML
 3. **内容迁移**：将网页内容转换为 Markdown 进行存档或编辑
 4. **文本分析**：提取纯文本用于字数统计、关键词分析等
 

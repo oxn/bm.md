@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": false,
   "packageManager": "pnpm@11.9.0",
-  "description": "Markdown 排版 CLI，支持微信公众号、知乎、掘金与 HTML 输出。",
+  "description": "Markdown 排版 CLI，支持微信公众号与 HTML 输出。",
   "license": "AGPL-3.0-only",
   "homepage": "https://github.com/miantiao-me/bm.md#readme",
   "repository": {
@@ -18,8 +18,6 @@
     "markdown",
     "cli",
     "wechat",
-    "zhihu",
-    "juejin",
     "formatter"
   ],
   "bin": {
