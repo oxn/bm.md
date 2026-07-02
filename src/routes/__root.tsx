@@ -1,4 +1,5 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import { MotionConfig } from 'motion/react'
 import { ThemeProvider } from 'next-themes'
 import { lazy, Suspense, useEffect } from 'react'
 
@@ -8,7 +9,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { appConfig } from '@/config'
 import { env } from '@/env'
-import { usePreviewStore } from '@/stores/preview'
+import { initClientIntegrations } from '@/lib/client-integrations'
 
 import appCss from '../styles.css?url'
 
@@ -36,6 +37,14 @@ const Devtools = import.meta.env.DEV
   : null
 
 export const Route = createRootRoute({
+  beforeLoad: () => {
+    return {
+      analytics: {
+        scriptUrl: env.ANALYTICS_SCRIPT_URL,
+        siteId: env.ANALYTICS_SITE_ID,
+      },
+    }
+  },
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -82,14 +91,6 @@ export const Route = createRootRoute({
       { rel: 'apple-touch-icon-precomposed', sizes: '180x180', href: '/apple-touch-icon-precomposed.png' },
     ],
   }),
-  beforeLoad: () => {
-    return {
-      analytics: {
-        scriptUrl: env.ANALYTICS_SCRIPT_URL,
-        siteId: env.ANALYTICS_SITE_ID,
-      },
-    }
-  },
   component: RootDocument,
   notFoundComponent: NotFound,
 })
@@ -99,12 +100,7 @@ function RootDocument() {
   const analyticsEnabled = analytics.scriptUrl && analytics.siteId
 
   useEffect(() => {
-    void usePreviewStore.persist.rehydrate()
-
-    Promise.all([
-      import('@/lib/pwa').then(({ initPWA }) => initPWA()),
-      import('@/lib/file-handler').then(({ initFileHandler }) => initFileHandler()),
-    ])
+    initClientIntegrations()
   }, [])
 
   return (
@@ -113,16 +109,18 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableColorScheme
-        >
-          <TooltipProvider>
-            <Outlet />
-            <ThemeColorMeta />
-          </TooltipProvider>
-        </ThemeProvider>
+        <MotionConfig reducedMotion="user">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableColorScheme
+          >
+            <TooltipProvider>
+              <Outlet />
+              <ThemeColorMeta />
+            </TooltipProvider>
+          </ThemeProvider>
+        </MotionConfig>
         {Devtools && (
           <Suspense fallback={null}>
             <Devtools />

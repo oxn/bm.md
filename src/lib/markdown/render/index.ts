@@ -2,15 +2,7 @@ import { ORPCError, os } from '@orpc/server'
 import * as z from 'zod'
 import { renderDefinition } from './definition'
 
-export {
-  codeThemeSchema,
-  infographicPaletteSchema,
-  infographicThemeSchema,
-  markdownStyleSchema,
-  mermaidThemeSchema,
-  platformSchema,
-  renderDefinition,
-} from './definition'
+export { renderDefinition } from './definition'
 
 export async function render(input: z.infer<typeof renderDefinition.inputSchema>) {
   try {
@@ -22,7 +14,7 @@ export async function render(input: z.infer<typeof renderDefinition.inputSchema>
   }
 }
 
-export async function renderPreview(input: z.infer<typeof renderDefinition.inputSchema>) {
+async function renderPreview(input: z.infer<typeof renderDefinition.inputSchema>) {
   try {
     const { renderPreview } = await import('./html')
     return renderPreview(input)

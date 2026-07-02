@@ -8,12 +8,12 @@ import { INPUT_SIZE_ERROR, MAX_INPUT_SIZE } from '../constants'
 import { outputOption } from '../types/definition'
 import { platforms } from './adapters'
 
-export const platformSchema = z.enum(platforms)
-export const markdownStyleSchema = z.enum(markdownStyleIds)
-export const codeThemeSchema = z.enum(codeThemeIds)
-export const mermaidThemeSchema = z.enum(mermaidThemeIds)
-export const infographicThemeSchema = z.enum(infographicThemeIds)
-export const infographicPaletteSchema = z.enum(infographicPaletteIds)
+const platformSchema = z.enum(platforms)
+const markdownStyleSchema = z.enum(markdownStyleIds)
+const codeThemeSchema = z.enum(codeThemeIds)
+const mermaidThemeSchema = z.enum(mermaidThemeIds)
+const infographicThemeSchema = z.enum(infographicThemeIds)
+const infographicPaletteSchema = z.enum(infographicPaletteIds)
 
 export const renderDefinition = {
   name: 'render',

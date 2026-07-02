@@ -3,6 +3,10 @@ import { useFilesStore } from '@/stores/files'
 import { FileTab } from './file-tab'
 import { NewFileButton } from './new-file-button'
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
 export function FileTabs() {
   const files = useFilesStore(state => state.files)
   const activeFileId = useFilesStore(state => state.activeFileId)
@@ -14,7 +18,7 @@ export function FileTabs() {
   const deleteFile = useFilesStore(state => state.deleteFile)
   const renameFile = useFilesStore(state => state.renameFile)
 
-  const tabsRef = useRef<Map<string, HTMLDivElement>>(new Map())
+  const tabsRef = useRef<Map<string, HTMLDivElement> | null>(null)
 
   useEffect(() => {
     if (hasHydrated) {
@@ -26,10 +30,10 @@ export function FileTabs() {
     if (isInitialized && activeFileId) {
       // 延迟一帧确保 DOM 已渲染且 ref 已注册
       requestAnimationFrame(() => {
-        const tabElement = tabsRef.current.get(activeFileId)
+        const tabElement = tabsRef.current?.get(activeFileId)
         if (tabElement) {
           tabElement.scrollIntoView({
-            behavior: 'smooth',
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth',
             block: 'nearest',
             inline: 'nearest',
           })
@@ -44,6 +48,10 @@ export function FileTabs() {
   }
 
   const setTabRef = (id: string) => (el: HTMLDivElement | null) => {
+    if (!tabsRef.current) {
+      tabsRef.current = new Map()
+    }
+
     if (el) {
       tabsRef.current.set(id, el)
     }
@@ -61,7 +69,7 @@ export function FileTabs() {
       const nextFile = files[nextIndex]
       switchFile(nextFile.id)
       requestAnimationFrame(() => {
-        tabsRef.current.get(nextFile.id)?.focus()
+        tabsRef.current?.get(nextFile.id)?.focus()
       })
     }
     else if (e.key === 'Enter' || e.key === ' ') {
@@ -74,7 +82,7 @@ export function FileTabs() {
       const firstFile = files[0]
       switchFile(firstFile.id)
       requestAnimationFrame(() => {
-        tabsRef.current.get(firstFile.id)?.focus()
+        tabsRef.current?.get(firstFile.id)?.focus()
       })
     }
     else if (e.key === 'End') {
@@ -82,7 +90,7 @@ export function FileTabs() {
       const lastFile = files[files.length - 1]
       switchFile(lastFile.id)
       requestAnimationFrame(() => {
-        tabsRef.current.get(lastFile.id)?.focus()
+        tabsRef.current?.get(lastFile.id)?.focus()
       })
     }
   }

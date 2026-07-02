@@ -5,12 +5,12 @@ import { editorCommandConfig } from '@/config'
 import { handleImportFiles } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
 
-export function ImportButton() {
-  const onImportClick = () => {
-    trackEvent('editor', 'import', 'button')
-    handleImportFiles()
-  }
+function onImportClick() {
+  trackEvent('editor', 'import', 'button')
+  handleImportFiles()
+}
 
+export function ImportButton() {
   return (
     <Tooltip>
       <TooltipTrigger

@@ -14,11 +14,17 @@ function getFilesFromDataTransfer(dataTransfer: DataTransfer | null): File[] {
     return []
   }
 
-  const items = Array.from(dataTransfer.items ?? [])
-  const filesFromItems = items
-    .filter(item => item.kind === 'file')
-    .map(item => item.getAsFile())
-    .filter((file): file is File => Boolean(file))
+  const filesFromItems: File[] = []
+  for (const item of Array.from(dataTransfer.items ?? [])) {
+    if (item.kind !== 'file') {
+      continue
+    }
+
+    const file = item.getAsFile()
+    if (file) {
+      filesFromItems.push(file)
+    }
+  }
 
   return filesFromItems.length
     ? filesFromItems
@@ -62,6 +68,7 @@ export async function importFilesToEditor(
   for (const file of files) {
     if (file.type === 'text/html') {
       try {
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 导入会立即修改编辑器内容，必须按用户文件顺序处理。
         const html = await file.text()
         const { markdown } = await import('@/lib/markdown/browser')
         const { result: md } = await markdown.parse({ html })
@@ -83,6 +90,7 @@ export async function importFilesToEditor(
 
     if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
       try {
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 导入会立即修改编辑器内容，必须按用户文件顺序处理。
         const md = await file.text()
         const from = replaceAll ? 0 : (insertPos ?? selection.from)
         const to = replaceAll ? view.state.doc.length : (insertPos ?? selection.to)
@@ -106,6 +114,7 @@ export async function importFilesToEditor(
         const formData = new FormData()
         formData.append('file', file)
         formData.append('name', file.name)
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop -- 图片插入位置依赖上一张图片长度，需要串行更新光标。
         const result = await uploadImage(formData)
 
         const imageMarkdown = `\n![${file.name}](${result.url})\n`
@@ -117,9 +126,10 @@ export async function importFilesToEditor(
         currentInsertPos += imageMarkdown.length
         toast.success(`图片上传成功: ${file.name}`, { id: toastId })
       }
-      catch (error: any) {
+      catch (error) {
         console.error('Image upload error:', error)
-        toast.error(error.message || `图片上传失败: ${file.name}`, { id: toastId })
+        const message = error instanceof Error ? error.message : `图片上传失败: ${file.name}`
+        toast.error(message, { id: toastId })
       }
       continue
     }

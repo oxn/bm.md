@@ -209,9 +209,15 @@ function sanitizeProperties(node: Element): void {
 }
 
 function sanitizeStyleElement(node: Element): void {
-  node.children = node.children
-    .filter(isText)
-    .map(child => ({ ...child, value: sanitizeStyleValue(child.value) }))
+  const children: Element['children'] = []
+
+  for (const child of node.children) {
+    if (isText(child)) {
+      children.push({ ...child, value: sanitizeStyleValue(child.value) })
+    }
+  }
+
+  node.children = children
 }
 
 function sanitizeNode(node: Element): boolean {
@@ -251,37 +257,56 @@ function sortedIds(idMap: Map<string, string>): string[] {
   return [...idMap.keys()].sort((a, b) => b.length - a.length)
 }
 
-function replaceUrlIdReferences(value: string, idMap: Map<string, string>): string {
-  let next = value
-  const ids = sortedIds(idMap)
+interface ReplacementRule {
+  pattern: RegExp
+  replacement: string
+}
 
-  for (const id of ids) {
+function createUrlIdReferenceRules(idMap: Map<string, string>): ReplacementRule[] {
+  return sortedIds(idMap).reduce<ReplacementRule[]>((rules, id) => {
     const prefixedId = idMap.get(id)
-    if (!prefixedId) {
-      continue
+    if (prefixedId) {
+      const escaped = escapeRegExp(id)
+      rules.push({
+        pattern: new RegExp(`url\\(\\s*(['"]?)#${escaped}\\1\\s*\\)`, 'g'),
+        replacement: `url(#${prefixedId})`,
+      })
     }
 
-    const escaped = escapeRegExp(id)
-    next = next.replace(new RegExp(`url\\(\\s*(['"]?)#${escaped}\\1\\s*\\)`, 'g'), `url(#${prefixedId})`)
+    return rules
+  }, [])
+}
+
+function createCssIdSelectorRules(idMap: Map<string, string>): ReplacementRule[] {
+  return sortedIds(idMap).reduce<ReplacementRule[]>((rules, id) => {
+    const prefixedId = idMap.get(id)
+    if (prefixedId) {
+      rules.push({
+        pattern: new RegExp(`#${escapeRegExp(id)}(?=[\\s,.#:{>+~\\[]|$)`, 'g'),
+        replacement: `#${prefixedId}`,
+      })
+    }
+
+    return rules
+  }, [])
+}
+
+function applyReplacementRules(value: string, rules: ReplacementRule[]): string {
+  let next = value
+
+  for (const { pattern, replacement } of rules) {
+    next = next.replace(pattern, replacement)
   }
 
   return next
 }
 
-function replaceCssIdSelectors(value: string, idMap: Map<string, string>): string {
-  let next = value
-  const ids = sortedIds(idMap)
+function replaceUrlIdReferences(value: string, rules: ReplacementRule[]): string {
+  return applyReplacementRules(value, rules)
+}
 
-  for (const id of ids) {
-    const prefixedId = idMap.get(id)
-    if (!prefixedId) {
-      continue
-    }
-
-    next = next.replace(new RegExp(`#${escapeRegExp(id)}(?=[\\s,.#:{>+~\\[]|$)`, 'g'), `#${prefixedId}`)
-  }
-
-  return next
+function replaceCssIdSelectors(value: string, rules: ReplacementRule[]): string {
+  return applyReplacementRules(value, rules)
 }
 
 function replaceHashReference(value: string, idMap: Map<string, string>): string {
@@ -293,9 +318,14 @@ function replaceSpaceSeparatedIdReferences(value: string, idMap: Map<string, str
   return value.split(/\s+/).map(id => idMap.get(id) ?? id).join(' ')
 }
 
-function replacePropertyIdReferences(name: string, value: string, idMap: Map<string, string>): string {
+function replacePropertyIdReferences(
+  name: string,
+  value: string,
+  idMap: Map<string, string>,
+  urlIdReferenceRules: ReplacementRule[],
+): string {
   const normalizedName = normalizeName(name)
-  let next = replaceUrlIdReferences(value, idMap)
+  let next = replaceUrlIdReferences(value, urlIdReferenceRules)
 
   if (idReferenceAttributeNames.has(normalizedName)) {
     next = replaceSpaceSeparatedIdReferences(next, idMap)
@@ -335,6 +365,9 @@ export function prefixSvgIds(svgNode: Element, prefix: string): void {
     return
   }
 
+  const urlIdReferenceRules = createUrlIdReferenceRules(idMap)
+  const cssIdSelectorRules = createCssIdSelectorRules(idMap)
+
   walkElements(svgNode, (element) => {
     const properties = element.properties as Record<string, unknown>
 
@@ -345,17 +378,26 @@ export function prefixSvgIds(svgNode: Element, prefix: string): void {
       }
 
       if (typeof value === 'string') {
-        properties[name] = replacePropertyIdReferences(name, value, idMap)
+        properties[name] = replacePropertyIdReferences(name, value, idMap, urlIdReferenceRules)
       }
       else if (Array.isArray(value)) {
-        properties[name] = value.map(item => typeof item === 'string' ? replacePropertyIdReferences(name, item, idMap) : item)
+        properties[name] = value.map((item) => {
+          if (typeof item === 'string') {
+            return replacePropertyIdReferences(name, item, idMap, urlIdReferenceRules)
+          }
+
+          return item
+        })
       }
     }
 
     if (element.tagName.toLowerCase() === 'style') {
       for (const child of element.children) {
         if (isText(child)) {
-          child.value = replaceCssIdSelectors(replaceUrlIdReferences(child.value, idMap), idMap)
+          child.value = replaceCssIdSelectors(
+            replaceUrlIdReferences(child.value, urlIdReferenceRules),
+            cssIdSelectorRules,
+          )
         }
       }
     }

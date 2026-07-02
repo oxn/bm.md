@@ -1,20 +1,10 @@
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { languages } from '@codemirror/language-data'
-import { EditorView } from '@codemirror/view'
 import CodeMirror from '@uiw/react-codemirror'
 import { useTheme } from 'next-themes'
-import { useMemo } from 'react'
 import { useEditorScrollSync } from '@/components/markdown/hooks/use-scroll-sync'
 import { useEditorStore } from '@/stores/editor'
 import { useFilesStore } from '@/stores/files'
 import { getAyuCodeMirrorTheme } from '@/themes/codemirror'
-import { importDropPasteExtension, importViewTrackerExtension } from './file-import'
-
-const lineNumbersTheme = EditorView.theme({
-  '.cm-lineNumbers': {
-    minWidth: '2em',
-  },
-})
+import { createEditorExtensions } from './editor-extensions'
 
 export default function CodeMirrorEditor() {
   const content = useFilesStore(state => state.currentContent)
@@ -26,26 +16,8 @@ export default function CodeMirrorEditor() {
     enabled: enableScrollSync,
   })
 
-  const editorTheme = useMemo(
-    () => getAyuCodeMirrorTheme(theme as 'light' | 'dark'),
-    [theme],
-  )
-
-  const extensions = useMemo(
-    () => [
-      markdown({
-        base: markdownLanguage,
-        codeLanguages: languages,
-      }),
-      EditorView.lineWrapping,
-      EditorView.contentAttributes.of({ 'aria-label': 'Markdown 编辑器' }),
-      lineNumbersTheme,
-      ...editorExtensions,
-      importViewTrackerExtension,
-      importDropPasteExtension,
-    ],
-    [editorExtensions],
-  )
+  const editorTheme = getAyuCodeMirrorTheme(theme as 'light' | 'dark')
+  const extensions = createEditorExtensions(editorExtensions)
 
   return (
     <CodeMirror

@@ -112,6 +112,7 @@ export function Safari({
           <video
             className="block size-full object-cover"
             src={videoSrc}
+            aria-label="Safari 窗口演示"
             autoPlay
             loop
             muted

@@ -1,11 +1,11 @@
 import { $fetch } from 'ofetch'
 import { env } from '@/env'
 
-export function getApiBaseUrl(): string {
+function getApiBaseUrl(): string {
   return env.VITE_API_URL?.replace(/\/$/, '') || ''
 }
 
-export function isCrossOriginApi(): boolean {
+function isCrossOriginApi(): boolean {
   return !!env.VITE_API_URL
 }
 

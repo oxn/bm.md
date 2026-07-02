@@ -1,5 +1,5 @@
 import type { HTMLAttributes, ReactNode } from 'react'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 // 固定尺寸参数
 const SCREEN_WIDTH = 375
@@ -112,22 +112,22 @@ export function Phone({
   const containerRef = useRef<HTMLDivElement>(null)
   const [phoneHeight, setPhoneHeight] = useState(MAX_PHONE_HEIGHT)
 
-  const updateHeight = useCallback(() => {
-    const container = containerRef.current
-    if (!container)
-      return
-
-    const parent = container.parentElement
-    if (!parent)
-      return
-
-    const availableHeight = parent.clientHeight - 20
-    const clampedHeight = Math.min(Math.max(availableHeight, MIN_PHONE_HEIGHT), MAX_PHONE_HEIGHT)
-    // eslint-disable-next-line react/set-state-in-effect -- ResizeObserver 回调中设置状态是合理的模式
-    setPhoneHeight(clampedHeight)
-  }, [])
-
   useLayoutEffect(() => {
+    const updateHeight = () => {
+      const container = containerRef.current
+      if (!container)
+        return
+
+      const parent = container.parentElement
+      if (!parent)
+        return
+
+      const availableHeight = parent.clientHeight - 20
+      const clampedHeight = Math.min(Math.max(availableHeight, MIN_PHONE_HEIGHT), MAX_PHONE_HEIGHT)
+      // eslint-disable-next-line react/set-state-in-effect -- ResizeObserver 回调中设置状态是合理的模式
+      setPhoneHeight(clampedHeight)
+    }
+
     const container = containerRef.current
     if (!container)
       return
@@ -140,7 +140,7 @@ export function Phone({
     }
 
     return () => observer.disconnect()
-  }, [updateHeight])
+  }, [])
 
   const screenHeight = phoneHeight - BORDER * 2
   const hasVideo = !!videoSrc
@@ -191,6 +191,7 @@ export function Phone({
           <video
             className="block size-full object-cover"
             src={videoSrc}
+            aria-label="iPhone 屏幕演示"
             autoPlay
             loop
             muted
@@ -256,7 +257,7 @@ export function Phone({
 
           {/* 左侧按键 - 静音（位置固定） */}
           <path
-            d="M0 171C0 170.448 0.447715 170 1 170H3V204H1C0.447715 204 0 203.552 0 203V171Z"
+            d="M0 171C0 170.45 0.45 170 1 170H3V204H1C0.45 204 0 203.55 0 203V171Z"
             className={`
               fill-[#E5E5E5]
               dark:fill-[#404040]
@@ -264,7 +265,7 @@ export function Phone({
           />
           {/* 左侧按键 - 音量+（位置固定） */}
           <path
-            d="M1 234C1 233.448 1.44772 233 2 233H3.5V300H2C1.44772 300 1 299.552 1 299V234Z"
+            d="M1 234C1 233.45 1.45 233 2 233H3.5V300H2C1.45 300 1 299.55 1 299V234Z"
             className={`
               fill-[#E5E5E5]
               dark:fill-[#404040]
@@ -272,7 +273,7 @@ export function Phone({
           />
           {/* 左侧按键 - 音量-（位置固定） */}
           <path
-            d="M1 319C1 318.448 1.44772 318 2 318H3.5V385H2C1.44772 385 1 384.552 1 384V319Z"
+            d="M1 319C1 318.45 1.45 318 2 318H3.5V385H2C1.45 385 1 384.55 1 384V319Z"
             className={`
               fill-[#E5E5E5]
               dark:fill-[#404040]

@@ -3,7 +3,7 @@ import { importFilesAsNewTabs, isImageFile } from '@/lib/file-importer'
 
 const ACCEPT_TYPES = 'text/html,text/markdown,.md,image/*'
 
-export function triggerImportDialog(): Promise<File[]> {
+function triggerImportDialog(): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'

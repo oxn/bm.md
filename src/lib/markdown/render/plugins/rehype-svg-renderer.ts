@@ -17,7 +17,7 @@ interface SvgRendererTask {
   code: string
 }
 
-export interface SvgRendererConfig<TOptions> {
+interface SvgRendererConfig<TOptions> {
   /** 用于匹配代码块的语言标识（如 'mermaid'、'infographic'） */
   languageId: string
   /** figure 元素的类名前缀（如 'figure-mermaid'） */
@@ -30,7 +30,7 @@ export interface SvgRendererConfig<TOptions> {
   adjustSvgStyle?: (svgNode: Element) => void
 }
 
-export function isCodeBlock(node: Element, languageId: string): boolean {
+function isCodeBlock(node: Element, languageId: string): boolean {
   if (node.tagName !== 'pre')
     return false
   const code = node.children.find(
@@ -46,7 +46,7 @@ export function isCodeBlock(node: Element, languageId: string): boolean {
 /**
  * 从 pre 元素中提取文本内容
  */
-export function extractText(pre: Element): string {
+function extractText(pre: Element): string {
   const code = pre.children.find(
     (c): c is Element => c.type === 'element' && c.tagName === 'code',
   )

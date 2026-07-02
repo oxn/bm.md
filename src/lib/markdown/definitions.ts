@@ -1,27 +1,19 @@
-import { extractDefinition } from './extract/definition'
-import { lintDefinition } from './lint/definition'
-import { parseDefinition } from './parse/definition'
-import { renderDefinition } from './render/definition'
+import type { extractDefinition } from './extract/definition'
+import type { lintDefinition } from './lint/definition'
+import type { parseDefinition } from './parse/definition'
+import type { renderDefinition } from './render/definition'
 
 export { extractDefinition } from './extract/definition'
 export { lintDefinition } from './lint/definition'
 export { parseDefinition } from './parse/definition'
-export {
-  codeThemeSchema,
-  infographicPaletteSchema,
-  infographicThemeSchema,
-  markdownStyleSchema,
-  mermaidThemeSchema,
-  platformSchema,
-  renderDefinition,
-} from './render/definition'
+export { renderDefinition } from './render/definition'
 export type { CliDefinition, CliOptionDefinition } from './types/definition'
 
-export const markdownToolDefinitions = [
-  renderDefinition,
-  parseDefinition,
-  extractDefinition,
-  lintDefinition,
-] as const
+type MarkdownToolDefinitions = [
+  typeof renderDefinition,
+  typeof parseDefinition,
+  typeof extractDefinition,
+  typeof lintDefinition,
+]
 
-export type MarkdownToolDefinition = typeof markdownToolDefinitions[number]
+export type MarkdownToolDefinition = MarkdownToolDefinitions[number]

@@ -1,10 +1,12 @@
 import type { Plugin } from 'vite'
 import rehypeExternalLinks from 'rehype-external-links'
+import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
+import { sanitizeSchema } from '../../src/lib/markdown/render/sanitize-schema'
 
 export function markdownPlugin(): Plugin {
   return {
@@ -21,6 +23,7 @@ export function markdownPlugin(): Plugin {
           target: '_blank',
           rel: ['noopener'],
         })
+        .use(rehypeSanitize, sanitizeSchema)
         .use(rehypeStringify)
         .process(code)
 

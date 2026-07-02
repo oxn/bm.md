@@ -1,7 +1,7 @@
 import type { Extension } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 import { EditorView as EditorViewClass } from '@codemirror/view'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEditorStore } from '@/stores/editor'
 
 function getScrollRatio(element: HTMLElement): number {
@@ -73,7 +73,7 @@ export function useEditorScrollSync(options: EditorScrollSyncOptions = {}): {
     }
   }, [enabled])
 
-  const editorExtensions = useMemo<Extension[]>(() => [
+  const editorExtensions: Extension[] = [
     EditorViewClass.domEventHandlers({
       scroll: (_event: Event, view: EditorView) => {
         const state = editorScrollStates.get(view)
@@ -93,7 +93,7 @@ export function useEditorScrollSync(options: EditorScrollSyncOptions = {}): {
         })
       },
     }),
-  ], [])
+  ]
 
   const onCreateEditor = (view: EditorView) => {
     editorViewRef.current = view

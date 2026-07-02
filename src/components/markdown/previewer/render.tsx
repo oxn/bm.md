@@ -1,10 +1,10 @@
 import { debounce } from 'es-toolkit'
 import morphdom from 'morphdom'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { usePreviewScrollSync } from '@/components/markdown/hooks/use-scroll-sync'
 import { Phone } from '@/components/mockups/iphone'
 import { Safari } from '@/components/mockups/safari'
-import { getMarkdownLocaleTexts } from '@/lib/locale'
+import { renderMarkdownPreview } from '@/lib/markdown/client-render'
 import { useEditorStore } from '@/stores/editor'
 import { useFilesStore } from '@/stores/files'
 import { PREVIEW_WIDTH_MOBILE, usePreviewStore } from '@/stores/preview'
@@ -13,6 +13,112 @@ import iframeShell from './iframe-shell.html?raw'
 
 const RENDER_DEBOUNCE_MS = 100
 const PREVIEW_STYLE_ID = 'bm-preview-style'
+interface MutableRef<T> {
+  current: T
+}
+
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&#39;',
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, char => HTML_ESCAPE_MAP[char] ?? char)
+}
+
+function createErrorHtml(message: string): string {
+  return `<section id="bm-md">${escapeHtml(message)}</section>`
+}
+
+function createPreviewBody(previewHtml: string): HTMLBodyElement {
+  const wrapper = document.createElement('body')
+  const template = document.createElement('template')
+  template.innerHTML = previewHtml
+  wrapper.append(template.content)
+  return wrapper
+}
+
+function applyIframeStyle(iframe: HTMLIFrameElement | null, css: string): boolean {
+  const iframeDoc = iframe?.contentDocument
+  const head = iframeDoc?.head
+
+  if (!head) {
+    return false
+  }
+
+  let style = head.querySelector<HTMLStyleElement>(`#${PREVIEW_STYLE_ID}`)
+  if (!style) {
+    style = iframeDoc.createElement('style')
+    style.id = PREVIEW_STYLE_ID
+    head.append(style)
+  }
+
+  style.textContent = css
+  return true
+}
+
+function syncIframeStyle(
+  iframe: HTMLIFrameElement | null,
+  css: string,
+  pendingCssRef: MutableRef<string | null>,
+): void {
+  pendingCssRef.current = applyIframeStyle(iframe, css) ? null : css
+}
+
+function applyIframeContent(
+  iframe: HTMLIFrameElement | null,
+  html: string,
+  css: string,
+  colorScheme: string,
+): boolean {
+  const body = iframe?.contentDocument?.body
+
+  if (!body) {
+    return false
+  }
+
+  applyIframeStyle(iframe, css)
+
+  const wrapper = createPreviewBody(colorScheme === 'dark'
+    ? applyDarkModeToPreviewHtml(html)
+    : html)
+
+  body.style.backgroundColor = colorScheme === 'dark' ? '#111111' : ''
+  body.style.colorScheme = colorScheme
+
+  morphdom(body, wrapper, {
+    childrenOnly: true,
+    onBeforeElUpdated(fromEl, toEl) {
+      if (fromEl.isEqualNode(toEl)) {
+        return false
+      }
+      return true
+    },
+  })
+
+  return true
+}
+
+function syncIframeContent(
+  iframe: HTMLIFrameElement | null,
+  html: string,
+  css: string,
+  colorScheme: string,
+  pendingHtmlRef: MutableRef<string | null>,
+  pendingCssRef: MutableRef<string | null>,
+): void {
+  if (!applyIframeContent(iframe, html, css, colorScheme)) {
+    pendingHtmlRef.current = html
+    pendingCssRef.current = css
+    return
+  }
+
+  pendingHtmlRef.current = null
+  pendingCssRef.current = null
+}
 
 export default function MarkdownRender() {
   const content = useFilesStore(state => state.currentContent)
@@ -38,7 +144,6 @@ export default function MarkdownRender() {
   const iframeReadyRef = useRef(false)
   const pendingHtmlRef = useRef<string | null>(null)
   const pendingCssRef = useRef<string | null>(null)
-  const canceledRef = useRef(false)
   const renderedHtmlRef = useRef(renderedHtml)
   const previewCssRef = useRef('')
 
@@ -46,70 +151,26 @@ export default function MarkdownRender() {
     renderedHtmlRef.current = renderedHtml
   }, [renderedHtml])
 
-  const updateIframeStyle = useCallback((css: string) => {
-    const iframeDoc = iframeRef.current?.contentDocument
-    const head = iframeDoc?.head
-
-    if (!head) {
-      pendingCssRef.current = css
-      return
-    }
-
-    let style = head.querySelector<HTMLStyleElement>(`#${PREVIEW_STYLE_ID}`)
-    if (!style) {
-      style = iframeDoc.createElement('style')
-      style.id = PREVIEW_STYLE_ID
-      head.append(style)
-    }
-
-    style.textContent = css
-    pendingCssRef.current = null
-  }, [iframeRef])
-
-  const updateIframeContent = useCallback((html: string) => {
-    const iframe = iframeRef.current
-    const body = iframe?.contentDocument?.body
-
-    if (!body) {
-      pendingHtmlRef.current = html
-      pendingCssRef.current = previewCssRef.current
-      return
-    }
-
-    updateIframeStyle(previewCssRef.current)
-
-    const wrapper = document.createElement('body')
-    wrapper.innerHTML = previewColorScheme === 'dark'
-      ? applyDarkModeToPreviewHtml(html)
-      : html
-
-    body.style.backgroundColor = previewColorScheme === 'dark' ? '#111111' : ''
-    body.style.colorScheme = previewColorScheme
-
-    morphdom(body, wrapper, {
-      childrenOnly: true,
-      onBeforeElUpdated(fromEl, toEl) {
-        if (fromEl.isEqualNode(toEl)) {
-          return false
-        }
-        return true
-      },
-    })
-  }, [iframeRef, previewColorScheme, updateIframeStyle])
-
-  const onIframeLoad = useCallback(() => {
+  const onIframeLoad = () => {
     iframeReadyRef.current = true
     onScrollSyncLoad()
 
+    const iframe = iframeRef.current
     const htmlToRender = pendingHtmlRef.current ?? renderedHtmlRef.current
-    updateIframeStyle(pendingCssRef.current ?? previewCssRef.current)
+    syncIframeStyle(iframe, pendingCssRef.current ?? previewCssRef.current, pendingCssRef)
     if (htmlToRender) {
-      updateIframeContent(htmlToRender)
-      pendingHtmlRef.current = null
+      syncIframeContent(
+        iframe,
+        htmlToRender,
+        previewCssRef.current,
+        previewColorScheme,
+        pendingHtmlRef,
+        pendingCssRef,
+      )
     }
 
     // 拦截 iframe 内的链接点击
-    const iframeDoc = iframeRef.current?.contentDocument
+    const iframeDoc = iframe?.contentDocument
     if (iframeDoc) {
       iframeDoc.addEventListener('click', (e: MouseEvent) => {
         const link = (e.target as HTMLElement).closest('a')
@@ -142,7 +203,7 @@ export default function MarkdownRender() {
         window.open(href, '_blank', 'noopener')
       })
     }
-  }, [onScrollSyncLoad, updateIframeContent, updateIframeStyle, iframeRef])
+  }
 
   useEffect(() => {
     if (!renderedHtml) {
@@ -150,82 +211,64 @@ export default function MarkdownRender() {
     }
 
     if (iframeReadyRef.current) {
-      updateIframeContent(renderedHtml)
+      syncIframeContent(
+        iframeRef.current,
+        renderedHtml,
+        previewCssRef.current,
+        previewColorScheme,
+        pendingHtmlRef,
+        pendingCssRef,
+      )
     }
     else {
       pendingHtmlRef.current = renderedHtml
     }
-  }, [renderedHtml, updateIframeContent])
-
-  const scheduleRender = useMemo(
-    () => debounce(async (
-      nextContent: string,
-      styleId: string,
-      themeId: string,
-      mermaidThemeId: string,
-      infographicThemeId: string,
-      infographicPaletteId: string,
-      customCssValue: string,
-      enableRefLinks: boolean,
-      openNewWin: boolean,
-      colorScheme: string,
-    ) => {
-      try {
-        const { markdown } = await import('@/lib/markdown/browser')
-        const renderInput = {
-          markdown: nextContent,
-          markdownStyle: styleId,
-          codeTheme: themeId,
-          mermaidTheme: mermaidThemeId,
-          infographicTheme: infographicThemeId,
-          infographicPalette: infographicPaletteId,
-          customCss: customCssValue,
-          enableFootnoteLinks: enableRefLinks,
-          openLinksInNewWindow: openNewWin,
-          ...getMarkdownLocaleTexts(),
-        }
-
-        const result = colorScheme === 'dark'
-          ? await markdown.render(renderInput)
-          : await markdown.preview(renderInput)
-
-        if (!canceledRef.current) {
-          if ('result' in result) {
-            previewCssRef.current = ''
-            updateIframeStyle('')
-            setRenderedHtml('html', result.result)
-          }
-          else {
-            previewCssRef.current = result.css
-            updateIframeStyle(result.css)
-            setRenderedHtml('html', `<section id="bm-md">${result.html}</section>`)
-          }
-        }
-      }
-      catch (error) {
-        if (!canceledRef.current) {
-          const message = error instanceof Error ? error.message : '转换失败'
-          setRenderedHtml('html', message)
-        }
-      }
-    }, RENDER_DEBOUNCE_MS),
-    [setRenderedHtml, updateIframeStyle],
-  )
+  }, [renderedHtml, previewColorScheme, iframeRef])
 
   useEffect(() => {
     if (!hasHydrated) {
       return
     }
 
+    let canceled = false
     clearRenderedHtmlCache()
-    canceledRef.current = false
-    scheduleRender(content, markdownStyle, codeTheme, mermaidTheme, infographic.theme, infographic.palette, customCss, enableFootnoteLinks, openLinksInNewWindow, previewColorScheme)
+
+    const scheduleRender = debounce(async () => {
+      try {
+        const result = await renderMarkdownPreview({
+          content,
+          markdownStyle,
+          codeTheme,
+          mermaidTheme,
+          infographicTheme: infographic.theme,
+          infographicPalette: infographic.palette,
+          customCss,
+          enableFootnoteLinks,
+          openLinksInNewWindow,
+          colorScheme: previewColorScheme,
+        })
+
+        if (!canceled) {
+          previewCssRef.current = result.css
+          syncIframeStyle(iframeRef.current, result.css, pendingCssRef)
+          setRenderedHtml('html', result.html)
+        }
+      }
+      catch (error) {
+        if (!canceled) {
+          const message = error instanceof Error ? error.message : '转换失败'
+          setRenderedHtml('html', createErrorHtml(message))
+        }
+      }
+    }, RENDER_DEBOUNCE_MS)
+
+    scheduleRender()
 
     return () => {
-      canceledRef.current = true
+      canceled = true
       scheduleRender.cancel()
     }
-  }, [hasHydrated, content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, previewColorScheme, scheduleRender, clearRenderedHtmlCache])
+  }, [hasHydrated, content, markdownStyle, codeTheme, mermaidTheme, infographic, customCss, enableFootnoteLinks, openLinksInNewWindow, previewColorScheme, setRenderedHtml, clearRenderedHtmlCache, iframeRef])
 
   const isMobile = previewWidth === PREVIEW_WIDTH_MOBILE
 

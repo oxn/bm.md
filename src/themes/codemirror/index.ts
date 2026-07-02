@@ -115,10 +115,8 @@ function createAyuTheme(colors: AyuPalette, isDark: boolean): Extension {
   })
 }
 
-export const ayuLight: Extension = createAyuTheme(lightColors, false)
-export const ayuMirage: Extension = createAyuTheme(darkColors, true)
-
-export { ayuLight as ayuLightTheme, ayuMirage as ayuMirageTheme }
+const ayuLight: Extension = createAyuTheme(lightColors, false)
+const ayuMirage: Extension = createAyuTheme(darkColors, true)
 
 /**
  * Get CodeMirror theme extension based on color mode

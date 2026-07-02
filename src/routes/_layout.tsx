@@ -1,24 +1,21 @@
 import { ClientOnly, createFileRoute, Outlet } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { CommandPalette } from '@/components/command-palette'
-import MarkdownEditor from '@/components/markdown/editor'
 import { FooterBar } from '@/components/markdown/footer-bar'
 import MarkdownPreviewer from '@/components/markdown/previewer'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { useFilesSync } from '@/hooks/use-files-sync'
+import { prepareMarkdownWorker } from '@/lib/markdown/prepare-worker'
 
 export const Route = createFileRoute('/_layout')({ component: App })
+
+const MarkdownEditor = lazy(() => import('@/components/markdown/editor'))
 
 function App() {
   useFilesSync()
 
   useEffect(() => {
-    const prepareWorker = async () => {
-      const { worker } = await import('@/lib/markdown/browser')
-      worker.prepare()
-    }
-
-    prepareWorker()
+    void prepareMarkdownWorker()
   }, [])
 
   return (
@@ -26,7 +23,9 @@ function App() {
       <main className="min-h-0 flex-1 overflow-hidden">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel defaultSize="50%" minSize="512px">
-            <MarkdownEditor></MarkdownEditor>
+            <Suspense fallback={<div className="size-full bg-editor" />}>
+              <MarkdownEditor />
+            </Suspense>
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize="50%" minSize="512px">

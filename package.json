@@ -47,7 +47,8 @@
     "typecheck": "tsc --noEmit",
     "types:check": "tsc --noEmit",
     "shadcn": "shadcn",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "doctor": "npx react-doctor@latest"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.1.0",
@@ -76,7 +77,6 @@
     "@tanstack/react-router": "^1.170.16",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/react-start": "^1.168.26",
-    "@tanstack/router-plugin": "^1.168.18",
     "@tsdown/css": "^0.22.3",
     "@types/file-saver": "^2.0.7",
     "@types/hast": "^3.0.4",

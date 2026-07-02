@@ -2,7 +2,6 @@ import type { PageMeta } from '@/lib/seo'
 import { createFileRoute } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
 import { getClients, transformConfig } from 'mcp-config/src/index.js'
-import { useMemo } from 'react'
 
 import { CopyButton } from '@/components/copy-button'
 import PageDialog from '@/components/dialog/page'
@@ -30,18 +29,16 @@ export const Route = createFileRoute('/_layout/docs/mcp')({
 })
 
 function McpConfigContent() {
-  const mcpUrl = useMemo(() => {
-    const baseUrl = env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
-    return `${baseUrl}/mcp`
-  }, [])
+  const baseUrl = env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+  const mcpUrl = `${baseUrl}/mcp`
 
-  const clients = useMemo(() => getClients(), [])
+  const clients = getClients()
 
-  const serverConfig = useMemo(() => ({
+  const serverConfig = {
     name: 'bm-md',
     type: 'http' as const,
     url: mcpUrl,
-  }), [mcpUrl])
+  }
 
   const getClientConfig = (clientSlug: string) => {
     try {

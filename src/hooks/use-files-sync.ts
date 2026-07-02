@@ -10,7 +10,7 @@ interface PersistedState {
   }
 }
 
-function computeFilesSignature(files: PersistedState['state']['files']): string {
+function getFilesSnapshotKey(files: PersistedState['state']['files']): string {
   return files.map(f => `${f.id}:${f.name}:${f.updatedAt}`).join('|')
 }
 
@@ -33,7 +33,7 @@ export function useFilesSync() {
 
       const local = useFilesStore.getState()
 
-      const filesChanged = computeFilesSignature(remote.files) !== computeFilesSignature(local.files)
+      const filesChanged = getFilesSnapshotKey(remote.files) !== getFilesSnapshotKey(local.files)
       if (filesChanged) {
         useFilesStore.setState({ files: remote.files })
       }

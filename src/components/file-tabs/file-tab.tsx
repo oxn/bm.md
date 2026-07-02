@@ -1,6 +1,6 @@
 import type { MarkdownFile } from '@/stores/files'
 import { FileText, X } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface FileTabProps {
@@ -12,24 +12,24 @@ interface FileTabProps {
 
 export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [editName, setEditName] = useState(file.name)
+  const [editName, setEditName] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleDoubleClick = useCallback(() => {
+  const handleDoubleClick = () => {
     setEditName(file.name)
     setIsEditing(true)
-  }, [file.name])
+  }
 
-  const handleSave = useCallback(() => {
+  const handleSave = () => {
     const trimmed = editName.trim()
     if (trimmed && trimmed !== file.name) {
       const finalName = trimmed.endsWith('.md') ? trimmed : `${trimmed}.md`
       onRename(finalName)
     }
     setIsEditing(false)
-  }, [editName, file.name, onRename])
+  }
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     // 阻止冒泡，防止外层 tab 的 onKeyDown 拦截
     e.stopPropagation()
     if (e.key === 'Enter') {
@@ -40,7 +40,7 @@ export function FileTab({ file, isActive, onClose, onRename }: FileTabProps) {
       setIsEditing(false)
       setEditName(file.name)
     }
-  }, [handleSave, file.name])
+  }
 
   useEffect(() => {
     if (isEditing && inputRef.current) {

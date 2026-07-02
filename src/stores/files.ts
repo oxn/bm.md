@@ -71,9 +71,12 @@ function ensureUniqueName(name: string, files: MarkdownFile[], excludeId?: strin
   const baseName = normalized.replace(/\.md$/i, '')
   const ext = '.md'
 
-  const existingNames = new Set(
-    files.filter(f => f.id !== excludeId).map(f => f.name.toLowerCase()),
-  )
+  const existingNames = new Set<string>()
+  for (const file of files) {
+    if (file.id !== excludeId) {
+      existingNames.add(file.name.toLowerCase())
+    }
+  }
 
   if (!existingNames.has(normalized.toLowerCase())) {
     return normalized
@@ -244,6 +247,7 @@ export const useFilesStore = create<FilesState>()(
         }
 
         try {
+          // react-doctor-disable-next-line react-doctor/async-defer-await -- 读取期间可能再次切换文件，await 后必须用序号丢弃过期结果。
           const content = await getFileContent(id)
           if (thisSeq !== switchSeq) {
             return

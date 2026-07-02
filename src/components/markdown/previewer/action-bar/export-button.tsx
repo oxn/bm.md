@@ -12,27 +12,27 @@ import { editorCommandConfig } from '@/config'
 import { copyImage, exportImage, exportPdf, printPreview } from '@/lib/actions'
 import { trackEvent } from '@/lib/analytics'
 
+async function onCopyClick() {
+  trackEvent('copy', 'image', 'button')
+  await copyImage()
+}
+
+async function onExportClick() {
+  trackEvent('export', 'image', 'button')
+  await exportImage()
+}
+
+async function onExportPdfClick() {
+  trackEvent('export', 'pdf', 'button')
+  await exportPdf()
+}
+
+function onPrintClick() {
+  trackEvent('export', 'print', 'button')
+  printPreview()
+}
+
 export function ExportButton() {
-  const onCopyClick = async () => {
-    trackEvent('copy', 'image', 'button')
-    await copyImage()
-  }
-
-  const onExportClick = async () => {
-    trackEvent('export', 'image', 'button')
-    await exportImage()
-  }
-
-  const onExportPdfClick = async () => {
-    trackEvent('export', 'pdf', 'button')
-    await exportPdf()
-  }
-
-  const onPrintClick = () => {
-    trackEvent('export', 'print', 'button')
-    printPreview()
-  }
-
   return (
     <DropdownMenu>
       <Tooltip>

@@ -103,8 +103,10 @@ export async function exportPdf() {
   let pageCanvas: HTMLCanvasElement | null = null
 
   try {
-    const { snapdom } = await import('@zumer/snapdom')
-    const { default: JsPDF } = await import('jspdf')
+    const [{ snapdom }, { default: JsPDF }] = await Promise.all([
+      import('@zumer/snapdom'),
+      import('jspdf'),
+    ])
 
     // SnapDOM 当前公开选项没有 crop/clip 坐标，只能先获取完整快照再切页。
     const snapshot = await snapdom(preview.content)
