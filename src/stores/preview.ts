@@ -24,9 +24,6 @@ interface PreviewState {
   previewWidth: PreviewWidth
   setPreviewWidth: (width: PreviewWidth) => void
 
-  userPreferredWidth: PreviewWidth
-  setUserPreferredWidth: (width: PreviewWidth) => void
-
   previewColorScheme: PreviewColorScheme
   togglePreviewColorScheme: () => void
 
@@ -48,13 +45,35 @@ interface PreviewState {
 
 export function partializePreviewState(state: PreviewState) {
   return {
-    userPreferredWidth: state.userPreferredWidth,
+    previewWidth: state.previewWidth,
     previewColorScheme: state.previewColorScheme,
     markdownStyle: state.markdownStyle,
     codeTheme: state.codeTheme,
     mermaidTheme: state.mermaidTheme,
     infographic: state.infographic,
     customCss: state.customCss,
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isPreviewWidth(value: unknown): value is PreviewWidth {
+  return value === PREVIEW_WIDTH_MOBILE || value === PREVIEW_WIDTH_DESKTOP
+}
+
+export function migratePreviewState(persistedState: unknown) {
+  if (!isRecord(persistedState)) {
+    return { previewWidth: PREVIEW_WIDTH_MOBILE }
+  }
+
+  const { userPreferredWidth, ...settings } = persistedState
+  return {
+    ...settings,
+    previewWidth: isPreviewWidth(userPreferredWidth)
+      ? userPreferredWidth
+      : PREVIEW_WIDTH_MOBILE,
   }
 }
 
@@ -69,9 +88,6 @@ export const usePreviewStore = create<PreviewState>()(
 
       previewWidth: PREVIEW_WIDTH_MOBILE,
       setPreviewWidth: previewWidth => set({ previewWidth }),
-
-      userPreferredWidth: PREVIEW_WIDTH_MOBILE,
-      setUserPreferredWidth: userPreferredWidth => set({ previewWidth: userPreferredWidth, userPreferredWidth }),
 
       previewColorScheme: 'light',
       togglePreviewColorScheme: () => set(state => ({
@@ -97,8 +113,10 @@ export const usePreviewStore = create<PreviewState>()(
     }),
     {
       name: 'bm.md.preview',
+      version: 1,
       skipHydration: true,
       partialize: partializePreviewState,
+      migrate: migratePreviewState,
       onRehydrateStorage: state => (rehydratedState, error) => {
         if (error) {
           console.error('Zustand preview rehydration error:', error)

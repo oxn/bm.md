@@ -80,7 +80,7 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
   }
 
   const previewWidth = usePreviewStore(state => state.previewWidth)
-  const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
+  const setPreviewWidth = usePreviewStore(state => state.setPreviewWidth)
   const markdownStyle = usePreviewStore(state => state.markdownStyle)
   const setMarkdownStyle = usePreviewStore(state => state.setMarkdownStyle)
   const codeTheme = usePreviewStore(state => state.codeTheme)
@@ -219,12 +219,12 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
 
   const handleMobileView = () => {
     closePanel()
-    setUserPreferredWidth(PREVIEW_WIDTH_MOBILE)
+    setPreviewWidth(PREVIEW_WIDTH_MOBILE)
   }
 
   const handleDesktopView = () => {
     closePanel()
-    setUserPreferredWidth(PREVIEW_WIDTH_DESKTOP)
+    setPreviewWidth(PREVIEW_WIDTH_DESKTOP)
   }
 
   const handleNavigate = (path: string) => {

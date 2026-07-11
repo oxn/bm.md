@@ -25,13 +25,13 @@ export default function MarkdownEditor() {
       >
         {isContentReady
           ? (
-              <ClientOnly fallback={<MarkdownLoadingFallback label="加载编辑器…" />}>
-                <Suspense fallback={<MarkdownLoadingFallback label="加载编辑器…" />}>
+              <ClientOnly fallback={<MarkdownLoadingFallback brand="bm" label="加载编辑器…" />}>
+                <Suspense fallback={<MarkdownLoadingFallback brand="bm" label="加载编辑器…" />}>
                   <CodeMirrorEditor key={`${contentFileId}:${contentEpoch}`} />
                 </Suspense>
               </ClientOnly>
             )
-          : <MarkdownLoadingFallback label="加载文件…" />}
+          : <MarkdownLoadingFallback brand="bm" label="加载文件…" />}
       </div>
     </div>
   )

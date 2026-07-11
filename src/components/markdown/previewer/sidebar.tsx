@@ -31,7 +31,7 @@ const externalNavigationItems = navigationConfig.external.map(item => ({
 export default function MarkdownPreviewerSidebar() {
   const previewWidth = usePreviewStore(state => state.previewWidth)
   const previewColorScheme = usePreviewStore(state => state.previewColorScheme)
-  const setUserPreferredWidth = usePreviewStore(state => state.setUserPreferredWidth)
+  const setPreviewWidth = usePreviewStore(state => state.setPreviewWidth)
   const togglePreviewColorScheme = usePreviewStore(state => state.togglePreviewColorScheme)
   const { theme, setTheme } = useTheme()
 
@@ -87,7 +87,8 @@ export default function MarkdownPreviewerSidebar() {
               variant="ghost"
               size="icon"
               aria-label={viewModeConfig.mobile.label}
-              onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_MOBILE)}
+              aria-pressed={isMobileView}
+              onClick={() => setPreviewWidth(PREVIEW_WIDTH_MOBILE)}
             >
               <Smartphone className={isMobileView
                 ? 'size-4 text-primary'
@@ -108,7 +109,8 @@ export default function MarkdownPreviewerSidebar() {
               variant="ghost"
               size="icon"
               aria-label={viewModeConfig.desktop.label}
-              onClick={() => setUserPreferredWidth(PREVIEW_WIDTH_DESKTOP)}
+              aria-pressed={isDesktopView}
+              onClick={() => setPreviewWidth(PREVIEW_WIDTH_DESKTOP)}
             >
               <Monitor className={isDesktopView
                 ? 'size-4 text-primary'

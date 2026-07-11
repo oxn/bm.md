@@ -118,12 +118,12 @@ src/
 ├─────────────────┬─────────────────┬─────────────────────────┤
 │   filesStore    │   editorStore   │      previewStore       │
 │                 │                 │                         │
-│  • files[]      │  • scrollRatio  │  • previewWidth         │
-│  • activeFileId │  • scrollSource │  • userPreferredWidth   │
-│  • currentContent│ • 3 项编辑设置 │  • previewColorScheme   │
-│  • isInitialized│                 │  • 渲染主题与 customCss │
-│  • contentStatus│                 │  • renderedSignature    │
-│  • revision     │                 │  • hasHydrated          │
+│  • files[]      │  • scrollRatio  │  • previewWidth（持久化）│
+│  • activeFileId │  • scrollSource │  • previewColorScheme   │
+│  • currentContent│ • 3 项编辑设置 │  • 渲染主题与 customCss │
+│  • isInitialized│                 │  • renderedSignature    │
+│  • contentStatus│                 │  • hasHydrated          │
+│  • revision     │                 │                         │
 ├─────────────────┴─────────────────┴─────────────────────────┤
 │                   commandPaletteStore                       │
 │                                                             │

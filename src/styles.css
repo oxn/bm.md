@@ -3,6 +3,7 @@
 @import 'shadcn/tailwind.css';
 @import './themes/shadcn/ayu-light.css';
 @import './themes/shadcn/ayu-mirage.css';
+@import './styles/theme-animation.css';
 @import './styles/scrollbar.css';
 
 @plugin "@tailwindcss/typography";
@@ -178,6 +179,21 @@
     font-variation-settings:
       'wght' 700,
       'ROND' 0;
+  }
+
+  @keyframes wave-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-25%);
+    }
+  }
+
+  .animate-wave-bounce {
+    animation: wave-bounce 1s ease-in-out infinite;
   }
 }
 
