@@ -2,6 +2,7 @@ import type { CaptureResult } from '@zumer/snapdom'
 import { toast } from 'sonner'
 import { copyImage as copyImageToClipboard } from '@/lib/clipboard'
 import { getPreviewElement } from './preview'
+import { getSafeRasterDimensions } from './raster'
 
 async function createPreviewSnapshot(): Promise<CaptureResult | null> {
   const previewContent = getPreviewElement()
@@ -9,7 +10,8 @@ async function createPreviewSnapshot(): Promise<CaptureResult | null> {
     return null
 
   const { snapdom } = await import('@zumer/snapdom')
-  return snapdom(previewContent)
+  const { width, height } = getSafeRasterDimensions(previewContent)
+  return snapdom(previewContent, { dpr: 1, width, height })
 }
 
 export async function exportImage() {
@@ -18,7 +20,11 @@ export async function exportImage() {
     if (!snapshot)
       return
 
-    await snapshot.download({ filename: 'bm.md.jpg', quality: 0.99 })
+    await snapshot.download({
+      filename: 'bm.md.jpg',
+      format: 'jpeg',
+      quality: 0.99,
+    })
     toast.success('已导出图片')
   }
   catch (error) {
@@ -33,7 +39,7 @@ export async function copyImage() {
     if (!snapshot)
       return
 
-    const blob = await snapshot.toBlob({ type: 'png' })
+    const blob = await snapshot.toBlob({ dpr: 1, type: 'png' })
     if (await copyImageToClipboard(blob)) {
       toast.success('已复制图片到剪贴板')
     }

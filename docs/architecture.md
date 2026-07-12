@@ -91,7 +91,7 @@ src/
 1. **解析阶段** - `remark-parse` 解析 Markdown AST
 2. **扩展处理** - GFM、Math、Frontmatter 等插件
 3. **转换阶段** - `remark-rehype` 转为 HTML AST
-4. **增强阶段** - 外部链接、GitHub Alert、KaTeX、代码高亮
+4. **增强阶段** - 外部链接、GitHub Alert、KaTeX、代码高亮，以及通过 `beautiful-mermaid` 渲染 Mermaid、通过 `@antv/infographic/ssr` 渲染 Infographic；生成的 SVG 经过安全清理
 5. **平台适配** - 微信使用专门适配；HTML 使用通用输出
 6. **样式内联** - `juice` 将 CSS 内联到元素
 
@@ -103,6 +103,30 @@ src/
 | ------ | -------------------------------------------------- |
 | HTML   | 通用 HTML 输出                                     |
 | WeChat | 链接转脚注、代码空格用 `\u00A0` 保护、表格滚动容器 |
+
+### 图片、PDF 与打印导出
+
+导出操作以已经写入预览 iframe 的当前正文与样式为输入：
+
+```mermaid
+sequenceDiagram
+  participant P as 预览 iframe DOM
+  participant S as snapDOM
+  participant R as 逐页栅格化
+  participant O as 导出结果
+  P->>S: 捕获当前正文与样式
+  alt 图片导出
+    S->>O: 下载 JPEG 或复制 PNG
+  else PDF 导出
+    S->>R: 返回一次 SVG 快照
+    R->>R: 按 DOM 断点修改 viewBox
+    R->>O: 写入分页 PDF
+  else 打印
+    P->>O: 调用浏览器打印
+  end
+```
+
+PDF 分页发生在栅格化之前：系统只捕获一次 SVG 快照，再依据 DOM 安全断点为每页修改 `viewBox`，最后逐页栅格化，而不是先生成整图 canvas 再切片。单页会按尺寸动态缩放，以遵守浏览器单边最大 16384 像素的限制。外部图片需要正确的 CORS 响应，建议先上传后导出，不依赖内置图片代理。
 
 ---
 
