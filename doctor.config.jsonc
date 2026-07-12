@@ -5,6 +5,7 @@
       "react-doctor/require-pnpm-hardening"
     ],
     "files": [
+      ".edgeone/**",
       ".output/**",
       "bin/**",
       "preset/**",
