@@ -40,8 +40,10 @@ const config = defineConfig({
         ? [nitro({
             preset: platformConfig.nitroPreset,
             cloudflare: {
+              nodeCompat: true,
               wrangler: {
                 name,
+                compatibility_date: '2026-07-12',
                 observability: { enabled: true },
                 keep_vars: true,
               },
