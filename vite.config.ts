@@ -9,7 +9,7 @@ import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { name } from './package.json'
-import { cssRawMinifyPlugin, fixNitroInlineDynamicImports, markdownPlugin } from './scripts/vite'
+import { cssRawMinifyPlugin, markdownPlugin } from './scripts/vite'
 import { resolvePlatformConfig } from './scripts/vite/platform'
 import { appConfig } from './src/config/app'
 import { MARKDOWN_FILE_EXTENSIONS } from './src/lib/markdown-file'
@@ -32,7 +32,6 @@ console.info('Using Nitro Preset:', platformConfig.nitroPreset || 'auto')
 
 const config = defineConfig({
   plugins: [
-    fixNitroInlineDynamicImports(),
     cssRawMinifyPlugin(),
     markdownPlugin(),
     devtools(),
