@@ -71,7 +71,17 @@ bmmd lint article.md --fix
 函数文件路径: dist/server/server.js
 ```
 
-其他环境部署配置参考 [Nitro](https://v3.nitro.build/deploy) 文档。
+腾讯云 EdgeOne 部署配置：
+
+```txt
+框架预设: Other
+根目录: ./
+输出目录: .output/public
+编译命令: pnpm run build
+安装命令: pnpm install
+```
+
+其他环境部署配置参考 [Nitro](https://nitro.build/deploy) 文档。
 
 ## 📖 文档
 
@@ -83,7 +93,7 @@ bmmd lint article.md --fix
 
 ## 🙏 致谢
 
-- [Kami](https://github.com/tw93/Kami) — 「Kami」排版风格的灵感来源（暖羊皮纸 + 墨蓝克制的编辑级排版）。
+- [Kami](https://github.com/tw93/Kami) — 「Kami」排版风格的灵感来源。
 
 ## 🤝 贡献
 
