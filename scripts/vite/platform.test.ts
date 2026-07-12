@@ -4,15 +4,23 @@ import { resolvePlatformConfig } from './platform'
 
 describe('resolvePlatformConfig', () => {
   it('默认使用 Nitro 自动检测', () => {
-    expect(resolvePlatformConfig({})).toEqual({
+    expect(resolvePlatformConfig({}, 'github_actions')).toEqual({
       nitroPreset: undefined,
       prerender: true,
       pwaOutDir: '.output/public',
     })
   })
 
+  it('在 Cloudflare Workers Builds 关闭预渲染', () => {
+    expect(resolvePlatformConfig({}, 'cloudflare_workers')).toEqual({
+      nitroPreset: undefined,
+      prerender: false,
+      pwaOutDir: '.output/public',
+    })
+  })
+
   it('存在 AliUid 时选择阿里云并保留预渲染与 PWA 输出目录', () => {
-    expect(resolvePlatformConfig({ AliUid: '123' })).toEqual({
+    expect(resolvePlatformConfig({ AliUid: '123' }, 'cloudflare_workers')).toEqual({
       nitroPreset: './preset/aliyun-esa/nitro.config.ts',
       prerender: true,
       pwaOutDir: 'dist/client',
@@ -23,7 +31,7 @@ describe('resolvePlatformConfig', () => {
     expect(resolvePlatformConfig({
       HOME: '/dev/shm/home',
       TMPDIR: '/dev/shm/tmp',
-    })).toEqual({
+    }, 'cloudflare_workers')).toEqual({
       nitroPreset: './preset/tencent-edgeone/nitro.config.ts',
       prerender: true,
       pwaOutDir: '.output/public',

@@ -1,3 +1,7 @@
+import type { ProviderName } from 'std-env'
+
+import { provider } from 'std-env'
+
 export interface PlatformEnvironment {
   AliUid?: string
   HOME?: string
@@ -10,7 +14,10 @@ export interface PlatformConfig {
   pwaOutDir: 'dist/client' | '.output/public'
 }
 
-export function resolvePlatformConfig(environment: PlatformEnvironment): PlatformConfig {
+export function resolvePlatformConfig(
+  environment: PlatformEnvironment,
+  detectedProvider: ProviderName = provider,
+): PlatformConfig {
   const isAliyunESA = Boolean(environment.AliUid)
   const isTencentEdgeOne = environment.HOME === '/dev/shm/home'
     && environment.TMPDIR === '/dev/shm/tmp'
@@ -23,11 +30,17 @@ export function resolvePlatformConfig(environment: PlatformEnvironment): Platfor
     }
   }
 
+  if (isTencentEdgeOne) {
+    return {
+      nitroPreset: './preset/tencent-edgeone/nitro.config.ts',
+      prerender: true,
+      pwaOutDir: '.output/public',
+    }
+  }
+
   return {
-    nitroPreset: isTencentEdgeOne
-      ? './preset/tencent-edgeone/nitro.config.ts'
-      : undefined,
-    prerender: true,
+    nitroPreset: undefined,
+    prerender: detectedProvider !== 'cloudflare_workers',
     pwaOutDir: '.output/public',
   }
 }

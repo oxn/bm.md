@@ -150,6 +150,7 @@
     "simple-git-hooks": "^2.13.1",
     "smol-toml": "^1.7.0",
     "sonner": "^2.0.7",
+    "std-env": "^4.1.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.2",
     "tsdown": "^0.22.4",
