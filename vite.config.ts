@@ -51,15 +51,17 @@ const config = defineConfig({
           })]
         : []),
     tailwindcss(),
-    tanstackStart({
-      prerender: {
-        enabled: platformConfig.prerender,
+tanstackStart({
+  prerender: platformConfig.prerender
+    ? {
+        enabled: true,
         filter: ({ path }) =>
           path === '/'
           || path === '/about'
           || path.startsWith('/docs'),
-      },
-    }),
+      }
+    : false,
+}),
     viteReact(),
     babel({
       presets: [reactCompilerPreset()],
