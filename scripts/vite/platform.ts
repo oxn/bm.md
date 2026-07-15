@@ -6,6 +6,9 @@ export interface PlatformEnvironment {
   AliUid?: string
   EDGEONE_PROJECT_ID?: string
   EO_MAKERS?: string
+
+  // Cloudflare Pages 自动注入
+  CF_PAGES?: string
 }
 
 export interface PlatformConfig {
@@ -20,6 +23,8 @@ export function resolvePlatformConfig(
 ): PlatformConfig {
   const isAliyunESA = Boolean(environment.AliUid)
   const isEdgeOneProvider = detectedProvider === 'edgeone_pages'
+  const isCloudflarePages = Boolean(environment.CF_PAGES)
+
   const isTencentEdgeOne
     = isEdgeOneProvider
       || Boolean(environment.EDGEONE_PROJECT_ID)
@@ -38,6 +43,15 @@ export function resolvePlatformConfig(
       nitroPreset: isEdgeOneProvider ? undefined : 'edgeone-pages',
       prerender: false,
       pwaOutDir: '.edgeone/assets',
+    }
+  }
+
+  // Cloudflare Pages
+  if (isCloudflarePages) {
+    return {
+      nitroPreset: 'cloudflare_pages',
+      prerender: false,
+      pwaOutDir: '.output/public',
     }
   }
 
