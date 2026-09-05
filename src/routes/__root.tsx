@@ -1,7 +1,7 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { MotionConfig } from 'motion/react'
+import { createClientOnlyFn } from '@tanstack/react-start'
 import { ThemeProvider } from 'next-themes'
 import { useEffect } from 'react'
 
@@ -11,12 +11,18 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { appConfig } from '@/config'
 import { env } from '@/env'
-import { initClientIntegrations } from '@/lib/client-integrations'
+import { GOOGLE_FONTS_CSS_BASE_URL, GOOGLE_FONTS_CSS_ORIGIN, GOOGLE_FONTS_STATIC_ORIGIN } from '@/lib/google-fonts'
+import { logSafeError } from '@/lib/log-safe-error'
 
 import appCss from '../styles.css?url'
 
+const initClientIntegrations = createClientOnlyFn(async () => {
+  const integrations = await import('@/lib/client-integrations.client')
+  return integrations.initClientIntegrations()
+})
+
 // Google Fonts URL - 仅加载 Logo 使用的字符
-const fontUrl = `https://fonts.googleapis.cn/css2?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
+const fontUrl = `${GOOGLE_FONTS_CSS_BASE_URL}?family=Doto:wght@700&display=swap&text=${encodeURIComponent(['bm.md', '404'].join(''))}`
 
 export const Route = createRootRoute({
   beforeLoad: () => {
@@ -56,8 +62,8 @@ export const Route = createRootRoute({
     ],
     links: [
       // Preconnect
-      { rel: 'preconnect', href: 'https://fonts.googleapis.cn' },
-      { rel: 'preconnect', href: 'https://fonts.gstatic.cn', crossOrigin: 'anonymous' },
+      { rel: 'preconnect', href: GOOGLE_FONTS_CSS_ORIGIN },
+      { rel: 'preconnect', href: GOOGLE_FONTS_STATIC_ORIGIN, crossOrigin: 'anonymous' },
       // Preload 关键资源
       { rel: 'preload', href: fontUrl, as: 'style', crossOrigin: 'anonymous' },
       { rel: 'preload', href: appCss, as: 'style' },
@@ -81,7 +87,9 @@ function RootDocument() {
   const analyticsEnabled = analytics.scriptUrl && analytics.siteId
 
   useEffect(() => {
-    initClientIntegrations()
+    void initClientIntegrations().catch((error) => {
+      logSafeError('[bm.md] 客户端初始化失败', error)
+    })
   }, [])
 
   return (
@@ -90,18 +98,16 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <MotionConfig reducedMotion="user">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableColorScheme
-          >
-            <TooltipProvider>
-              <Outlet />
-              <ThemeColorMeta />
-            </TooltipProvider>
-          </ThemeProvider>
-        </MotionConfig>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableColorScheme
+        >
+          <TooltipProvider>
+            <Outlet />
+            <ThemeColorMeta />
+          </TooltipProvider>
+        </ThemeProvider>
         {env.DEV && (
           <TanStackDevtools
             config={{ position: 'bottom-right' }}

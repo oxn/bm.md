@@ -14,8 +14,7 @@
    高亮黄: #ffff00 (纯黄)
    成功绿: #00aa00 (深绿)
    亮绿: #00ff00 (Lime 绿)
-   标题栏: #000080 (海军蓝)
-   标题栏渐变: #1084d0 (天蓝)
+   标题栏: #000080 (海军蓝，纯色无渐变)
    边框亮: #ffffff (白色高光)
    边框暗: #808080 (灰色阴影)
    内阴影暗: #404040
@@ -28,7 +27,7 @@
 
 /* ============================================
    容器 - Windows 95 风格主界面
-   经典外凸 3D 边框效果
+   经典外凸 3D 边框效果 + 纯色桌面灰
    ============================================ */
 
 #bm-md {
@@ -44,16 +43,6 @@
   box-shadow:
     inset -1px -1px 0 #404040,
     inset 1px 1px 0 #dfdfdf;
-  /* 90年代瓷砖纹理背景 */
-  background-image:
-    linear-gradient(45deg, #b8b8b8 25%, transparent 25%), linear-gradient(-45deg, #b8b8b8 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #b8b8b8 75%), linear-gradient(-45deg, transparent 75%, #b8b8b8 75%);
-  background-size: 4px 4px;
-  background-position:
-    0 0,
-    0 2px,
-    2px -2px,
-    -2px 0px;
 }
 
 /* ============================================
@@ -74,11 +63,11 @@
   margin-bottom: 0.5em;
 }
 
-/* H1 - Windows 标题栏风格 (渐变标题) */
+/* H1 - Windows 标题栏风格（经典纯海军蓝） */
 #bm-md h1 {
   font-size: 1.75em;
   color: #ffffff;
-  background: linear-gradient(to right, #000080, #1084d0);
+  background-color: #000080;
   padding: 0.3em 0.5em;
   border: 2px solid;
   border-color: #ffffff #808080 #808080 #ffffff;
@@ -191,6 +180,12 @@
   border: 1px solid #000000;
 }
 
+/* 纯红在黄色高亮上对比不足，改用深红保留复古强调色 */
+#bm-md mark strong,
+#bm-md mark b {
+  color: #800000;
+}
+
 #bm-md small {
   font-size: 0.875em;
   color: #404040;
@@ -225,7 +220,7 @@
 
 /* 引用 - 红色引号 */
 #bm-md q {
-  quotes: '"' '"' '' ' ' '';
+  quotes: '"' '"';
   color: #000080;
 }
 
@@ -445,17 +440,7 @@
   background-color: #ffffff;
 }
 
-/* 表头首行样式 - 渐变应用于整行 */
-#bm-md thead tr {
-  background-color: #000080;
-  background: linear-gradient(to right, #000080, #1084d0);
-}
-
-#bm-md thead th {
-  background-color: transparent;
-  color: #ffffff;
-}
-
+/* 表头 - 经典纯海军蓝标题栏 */
 #bm-md th,
 #bm-md td {
   padding: 0.4em 0.6em;
@@ -467,6 +452,7 @@
   font-weight: 700;
   color: #ffffff;
   text-shadow: 1px 1px 0 #000000;
+  background-color: #000080;
 }
 
 /* 交替行背景 */
@@ -511,9 +497,10 @@
 #bm-md hr {
   margin: 1.25em 0;
   border: none;
-  height: 4px;
-  background-color: #808080;
-  background: linear-gradient(to bottom, #808080 0%, #808080 50%, #ffffff 50%, #ffffff 100%);
+  /* 3D 凹槽的实体表达：上暗下亮双实线 */
+  border-top: 2px solid #808080;
+  border-bottom: 2px solid #ffffff;
+  height: 0;
 }
 
 /* ============================================
@@ -523,7 +510,6 @@
 #bm-md img {
   display: block;
   max-width: 100%;
-  height: auto;
   border: 2px solid;
   border-color: #808080 #ffffff #ffffff #808080;
   box-shadow: inset 1px 1px 0 #404040;

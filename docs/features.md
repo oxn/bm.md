@@ -37,8 +37,10 @@ bm.md 是一个专业的 Markdown 排版工具，专为内容创作者设计。�
 
 支持多种方式导入内容：
 
-- **统一文件识别** - 文件导入、拖拽与 PWA 文件关联统一支持 `.md`、`.markdown`、`.mdown`、`.mkd`，扩展名大小写不敏感
+- **Markdown 文件** - 支持 `.md`、`.markdown`、`.mdown`、`.mkd`，扩展名大小写不敏感
 - **HTML 转换** - `.html`、`.htm` 文件经 Markdown Worker 转换后导入
+- **文档转换** - 支持 Word（`.doc`、`.docx`、`.docm`）、PowerPoint（`.ppt`、`.pps`、`.pot`、`.pptx`、`.pptm`、`.ppsx`、`.ppsm`）、Excel（`.xls`、`.xlsx`、`.xlsm`、`.xlsb`）、OpenDocument（`.odt`、`.ods`、`.odp`），以及 `.rtf`、`.epub`、`.csv`、`.pdf`
+- **大小限制** - 可转换文档单个不超过 20MB
 - **拖拽导入** - 直接拖拽文件到编辑器区域
 - **粘贴导入** - 支持粘贴 HTML 内容自动转换为 Markdown
 - **快捷键** - `Cmd/Ctrl + O` 快速打开文件
@@ -108,25 +110,18 @@ sequenceDiagram
 
 ### Markdown 排版样式
 
-内置 15 种精心设计的排版风格：
+内置 8 种排版风格。Kami 是默认样式，定位为简洁、清晰的纸张阅读体验，设计灵感来自 [tw93/Kami](https://github.com/tw93/Kami)。
 
-| 样式 ID             | 名称              | 风格描述                   |
-| ------------------- | ----------------- | -------------------------- |
-| `ayu-light`         | Ayu Light         | 清新淡雅的浅色主题         |
-| `bauhaus`           | Bauhaus           | 包豪斯风格，几何与功能主义 |
-| `blueprint`         | Blueprint         | 蓝图技术文档风格           |
-| `botanical`         | Botanical         | 植物园风格，自然柔和       |
-| `green-simple`      | GreenSimple       | 简约绿色风格               |
-| `kami`              | Kami              | 纸张阅读风格               |
-| `maximalism`        | Maximalism        | 极繁主义，丰富装饰         |
-| `neo-brutalism`     | Neo-Brutalism     | 新野兽派，大胆对比         |
-| `newsprint`         | Newsprint         | 报纸印刷风格               |
-| `organic`           | Organic           | 有机自然风格               |
-| `playful-geometric` | Playful Geometric | 活泼几何图形风格           |
-| `professional`      | Professional      | 专业商务风格               |
-| `retro`             | Retro             | 复古怀旧风格               |
-| `sketch`            | Sketch            | 手绘素描风格               |
-| `terminal`          | Terminal          | 终端/命令行风格            |
+| 样式 ID     | 名称      | 风格描述                   |
+| ----------- | --------- | -------------------------- |
+| `kami`      | Kami      | 简洁的纸张阅读风格（默认） |
+| `bauhaus`   | Bauhaus   | 包豪斯风格，几何与功能主义 |
+| `blueprint` | Blueprint | 蓝图技术文档风格           |
+| `botanical` | Botanical | 植物园风格，自然柔和       |
+| `newsprint` | Newsprint | 报纸印刷风格               |
+| `retro`     | Retro     | 复古怀旧风格               |
+| `sketch`    | Sketch    | 手绘素描风格               |
+| `terminal`  | Terminal  | 终端/命令行风格            |
 
 ### 代码高亮主题
 
@@ -164,7 +159,7 @@ sequenceDiagram
 - CSS 选择器需约束在 `#bm-md` 下
 - 自定义样式在主题样式之后应用，可覆盖默认样式
 - 支持通过 API/MCP 传入 `customCss` 参数
-- 配置自动保存到本地存储
+- 编辑完成后点击“保存”才会应用，并持久化到本地存储
 
 示例：
 
@@ -211,11 +206,12 @@ sequenceDiagram
 
 ### PDF 导出与打印
 
-- **高质量分页 PDF** - 只执行一次 snapDOM SVG 快照，按 DOM 安全断点逐页修改 `viewBox`，再以 2x 比例栅格化并写入 PDF
-- **尺寸保护** - 单页会根据内容尺寸动态缩放，遵守浏览器单边最大 16384 像素的限制
-- **打印** - 使用当前已完成渲染的预览内容打开浏览器打印流程
-
-预览中的外部图片必须允许跨域读取（CORS），否则图片、PDF 导出可能无法完整捕获。建议先通过图片上传功能取得可用地址；bm.md 不承诺为任意外部图片提供代理。
+- **矢量 PDF** - 按当前预览导出 A4 分页 PDF；文字可选中，标题生成书签
+- **中日韩与 Emoji** - 按文档语言与内容加载对应 Noto 字体（含代码等宽与 Emoji）；个别字符仍无法覆盖时替换为 `□` 并提示
+- **页面背景** - 纯色底铺满整页（含页边距）；主题渐变、点阵等纹理只出现在正文区域
+- **图片** - 支持预览中的图片与内联 SVG；外链图片需允许跨域读取（CORS）。单张不超过 20 MiB，合计不超过 64 MiB，最多 64 个不同图片地址
+- **边界** - 使用引擎支持的 CSS 子集，不运行预览中的脚本；外部背景图、遮罩等资源不一定打进 PDF；复杂样式可能与预览不完全一致
+- **打印降级** - 离线且所需字体尚未缓存，或 PDF 引擎不可用时，自动打开浏览器打印；也可随时对当前预览使用打印
 
 ---
 
@@ -276,7 +272,7 @@ pnpm dlx bmmd lint article.md --fix
 | 参数                         | 默认值         | 说明                               |
 | ---------------------------- | -------------- | ---------------------------------- |
 | `--platform <platform>`      | `html`         | 输出平台：`html`、`wechat`         |
-| `--markdown-style <id>`      | `ayu-light`    | Markdown 排版样式                  |
+| `--markdown-style <id>`      | `kami`         | Markdown 排版样式                  |
 | `--code-theme <id>`          | `kimbie-light` | 代码块高亮主题                     |
 | `--mermaid-theme <id>`       | 默认主题       | Mermaid 流程图主题                 |
 | `--infographic-theme <id>`   | `default`      | Infographic 信息图主题             |
@@ -290,7 +286,9 @@ pnpm dlx bmmd lint article.md --fix
 
 ### REST API
 
-提供 4 个核心 API 端点：
+#### Markdown API
+
+Scalar 文档 `/docs` 展示以下 4 个 Markdown API：
 
 | 端点                         | 功能                 |
 | ---------------------------- | -------------------- |
@@ -299,7 +297,9 @@ pnpm dlx bmmd lint article.md --fix
 | `POST /api/markdown/extract` | 提取纯文本           |
 | `POST /api/markdown/lint`    | 格式校验与修复       |
 
-完整 API 文档可访问 `/docs` 查看（Scalar UI）。
+#### 图片上传
+
+`POST /api/upload/image` 用于将编辑器中的临时图片写入配置的 S3 兼容存储或默认图床。请求使用 `multipart/form-data`，包含 `file` 与非空 `name` 字段；图片文件不超过 5MB，声明的 `Content-Length` 超过 6MB 时会被拒绝，仅接受经文件签名识别的 PNG、JPEG、GIF、WebP，成功时返回 `{ "url": "..." }`。该路由独立实现，不属于上述 Scalar/OpenAPI 文档。
 
 ### MCP 协议
 
@@ -319,7 +319,7 @@ pnpm dlx bmmd lint article.md --fix
 
 - 离线可用 - 核心功能无需网络
 - 可安装 - 支持添加到主屏幕
-- 文件关联 - 支持在操作系统中直接用 bm.md 打开 `.md` 文件
+- 文件关联 - 支持在操作系统中直接用 bm.md 打开 `.md`、`.markdown`、`.mdown`、`.mkd`，以及文件导入支持的 Word、PowerPoint、Excel、OpenDocument、RTF、EPUB、CSV、PDF 文档
 
 ---
 
@@ -365,7 +365,11 @@ pnpm dlx bmmd lint article.md --fix
 
 #### 文本格式
 
-这是**粗体文本**，这是*斜体文本*，这是~~删除线文本~~，这是***粗斜体文本***。
+这是**粗体文本**，这是*斜体文本*，这是~~删除线文本~~，这是***粗斜体文本***，这是==高亮文本==。
+
+高亮内可继续使用内联格式，例如 `==**粗体高亮**==` 与 `==*斜体高亮*==`；行内代码中的 `==` 保持原样。
+
+==这里是一段真实高亮示例==
 
 #### 列表
 
@@ -410,6 +414,12 @@ greet('World')
 这是一个[普通链接](https://bm.md)，这是一个[带标题的链接](https://bm.md 'bm.md 官网')。
 
 ![bm.md](/banner.png)
+
+支持 Obsidian 风格图片尺寸。尺寸只接受正整数，宽高之间使用小写 `x`；尺寸后缀不会出现在替代文本和图片题注中。
+
+![单宽图片|320](/banner.png)
+
+![固定宽高图片|320x180](/banner.png)
 
 ---
 
@@ -473,6 +483,24 @@ data
 ---
 
 ### 高级功能
+
+#### Frontmatter
+
+支持 YAML（`---`）与 TOML（`+++`）Frontmatter，并在渲染时转换为表格：
+
+```yaml
+---
+title: 示例文章
+author: bm.md
+---
+```
+
+```text
++++
+title = "示例文章"
+draft = false
++++
+```
 
 #### 脚注
 

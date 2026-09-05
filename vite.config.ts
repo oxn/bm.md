@@ -12,6 +12,7 @@ import { name } from './package.json'
 import { cssRawMinifyPlugin, markdownPlugin } from './scripts/vite'
 import { resolvePlatformConfig } from './scripts/vite/platform'
 import { appConfig } from './src/config/app'
+import { DOCUMENT_MIME_EXTENSIONS } from './src/lib/document/files'
 import { MARKDOWN_FILE_EXTENSIONS } from './src/lib/markdown-file'
 
 const require = createRequire(import.meta.url)
@@ -27,6 +28,20 @@ const codemirrorPackages = [
   '@codemirror/state',
   '@codemirror/view',
 ]
+const dynamicOptimizeDeps = [
+  '@orpc/client',
+  '@orpc/client/message-port',
+  '@orpc/server',
+  '@orpc/server/message-port',
+  '@antv/infographic',
+  '@antv/infographic/ssr',
+  '@zumer/snapdom',
+  'beautiful-mermaid',
+  'juice',
+  'markdownlint',
+  'markdownlint/promise',
+  'workbox-window',
+]
 
 console.info('Using Nitro Preset:', platformConfig.nitroPreset || 'auto')
 
@@ -39,6 +54,7 @@ const config = defineConfig({
       env.NODE_ENV !== 'test'
         ? [nitro({
             preset: platformConfig.nitroPreset,
+            unenv: platformConfig.nitroUnenv,
             cloudflare: {
               nodeCompat: true,
               wrangler: {
@@ -93,6 +109,7 @@ tanstackStart({
             action: '/',
             accept: {
               'text/markdown': [...MARKDOWN_FILE_EXTENSIONS],
+              ...DOCUMENT_MIME_EXTENSIONS,
             },
           },
         ],
@@ -101,8 +118,8 @@ tanstackStart({
         },
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm,woff,woff2}'],
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       },
       devOptions: {
         enabled: true,
@@ -119,7 +136,8 @@ tanstackStart({
     },
   },
   optimizeDeps: {
-    include: codemirrorPackages,
+    include: [...codemirrorPackages, ...dynamicOptimizeDeps],
+    exclude: ['@firecrawl/anydoc-wasm'],
   },
   worker: {
     format: 'es',

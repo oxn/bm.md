@@ -13,6 +13,7 @@ export interface PlatformEnvironment {
 
 export interface PlatformConfig {
   nitroPreset: string | undefined
+  nitroUnenv: { external: string[] } | undefined
   prerender: boolean
   pwaOutDir: 'dist/client' | '.edgeone/assets' | '.output/public'
 }
@@ -33,6 +34,7 @@ export function resolvePlatformConfig(
   if (isAliyunESA) {
     return {
       nitroPreset: './preset/aliyun-esa/nitro.config.ts',
+      nitroUnenv: undefined,
       prerender: true,
       pwaOutDir: 'dist/client',
     }
@@ -41,6 +43,7 @@ export function resolvePlatformConfig(
   if (isTencentEdgeOne) {
     return {
       nitroPreset: isEdgeOneProvider ? undefined : 'edgeone-pages',
+      nitroUnenv: undefined,
       prerender: false,
       pwaOutDir: '.edgeone/assets',
     }
@@ -57,6 +60,12 @@ export function resolvePlatformConfig(
 
   return {
     nitroPreset: undefined,
+    nitroUnenv: detectedProvider === 'cloudflare_workers'
+      ? {
+          // undici 会探测此模块；external 可避免 unenv shim 被编译成 undefined。
+          external: ['node:worker_threads'],
+        }
+      : undefined,
     prerender: detectedProvider !== 'cloudflare_workers',
     pwaOutDir: '.output/public',
   }

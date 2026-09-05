@@ -19,7 +19,7 @@
 
 ### 依赖说明
 
-- `mcp-config` 暂时保留 GitHub 依赖：已检查 npm 版 `mcp-config@0.0.10`，其包内容是交互式 CLI（`main`/`bin` 指向 `dist/index.js`），不提供当前 MCP 配置页使用的 `getClients` / `transformConfig` 兼容导出，也没有兼容的 `mcp-config/src/index.js` 入口。
+- `mcp-config` 保留 GitHub 依赖，因为当前 MCP 配置页使用其 `getClients`、`transformConfig` 与 `mcp-config/src/index.js` 入口，而 npm 包不提供兼容导出与入口。
 
 ---
 
@@ -47,6 +47,7 @@ src/
 ├── icons/               # 自定义图标
 ├── lib/                 # 核心业务逻辑
 │   ├── actions/         # 用户操作（导入/导出/复制）
+│   ├── pdf/             # PDF 快照、资源处理、Worker 与协议
 │   ├── file-storage.ts  # IndexedDB 文件存储
 │   ├── file-importer.ts # 文件分类、解析与标签创建
 │   ├── upload-image.ts  # 图片上传客户端边界（ofetch + Zod）
@@ -118,22 +119,55 @@ src/
 ```mermaid
 sequenceDiagram
   participant P as 预览 iframe DOM
-  participant S as snapDOM
-  participant R as 逐页栅格化
+  participant S as 序列化与资源抓取
+  participant R as Takumi PDF Worker
   participant O as 导出结果
-  P->>S: 捕获当前正文与样式
+  P->>S: 读取当前正文、样式与图片
   alt 图片导出
-    S->>O: 下载 JPEG 或复制 PNG
+    P->>O: snapDOM 下载 JPEG 或复制 PNG
   else PDF 导出
-    S->>R: 返回一次 SVG 快照
-    R->>R: 按 DOM 断点修改 viewBox
-    R->>O: 写入分页 PDF
+    S->>R: 发送 HTML、CSS、图片字节
+    R->>R: WASM 排版并按 A4 分页
+    R->>O: 返回矢量 PDF 字节
   else 打印
     P->>O: 调用浏览器打印
   end
 ```
 
-PDF 分页发生在栅格化之前：系统只捕获一次 SVG 快照，再依据 DOM 安全断点为每页修改 `viewBox`，最后逐页栅格化，而不是先生成整图 canvas 再切片。单页会按尺寸动态缩放，以遵守浏览器单边最大 16384 像素的限制。外部图片需要正确的 CORS 响应，建议先上传后导出，不依赖内置图片代理。
+PDF 导出不重新执行 Markdown 或脚本。主线程快照预览 iframe 的 HTML、样式、基础背景色与图片地址，抓取图片字节后交给模块级复用的 Worker；Worker 用 Takumi PDF WASM 排版为 A4 矢量 PDF（可选文字、标题书签）。`takumi-pdf` 与 `@takumi-rs/helpers` 作为同一升级组维护。字体或运行时不可用时，导出入口降级为打开浏览器打印。
+
+**主线程快照**
+
+- 克隆预览内容并移除脚本；按 content → body → html 选取首个不透明背景色。
+- 读取可访问 stylesheet，并对 stylesheet、内联 style、克隆内 `<style>` 做窄范围 `overflow` 兼容（`auto`/`scroll` → `visible`），不改选择器、字符串、URL、自定义属性，也不静默删其他未知 CSS。
+- 解析 `<img>` 地址、加载字节、选择字体族与 PDF 专用样式后，组装为 `PdfRenderInput`。
+
+**browser / Worker 协议与 transferable**
+
+- 请求：`PdfRenderInput`（含 `images: FetchedImage[]`）。发送时 `postMessage` 转移各图 `data`（ArrayBuffer）。
+- 响应为判别联合 `PdfWorkerResponse`：
+  - 成功：`{ success: true, pdf: ArrayBuffer }`，PDF 以 transferable 回传。
+  - 缺字：`{ success: false, kind: 'missingGlyphs', codepoints, images }`——**仅此路径**把图片所有权转回主线程，供恢复后再次发送。
+  - 其他失败：`fontUnavailable` | `renderFailed` | `runtimeUnavailable`，不附带图片。
+- 缺字替换记录 `replacements` 只留在 browser 侧，不进入 Worker 协议。
+- 流程：初始渲染一次；若 `missingGlyphs`，主线程恢复后最多再试 3 次（合计最多 4 次 Worker 往返）。仍失败则报错。
+
+**字体与缺字恢复**
+
+- Worker 经 Takumi `googleFonts()` 加载 Noto：Serif 字重 `200..900`，Sans 字重 `100..900`，区域 SC/TC/JP/KR；有代码块时加 Noto Sans Mono；正文含 Emoji/符号时再加 Noto Color Emoji、Noto Emoji。Google Fonts `.cn` 为 bm.md 镜像策略，非 Takumi 官方 endpoint。字体保留 `unicode-range`，只下载实际用到的分片。
+- 缺字时主线程：在文本节点按 grapheme 将无法覆盖的字符换为 `□`（不改属性）；对仍未覆盖、且尚未探针过的码点，向 `#bm-md` 追加不可见 **generated Emoji/CJK 探针** 并扩展 `fontFamilies`，再重试。同一码点探针失败则终止。
+- 字体响应写入 Cache Storage（best-effort）；缓存故障不阻断在线加载。生产 PWA 预缓存 PDF Worker 与 Takumi WASM，不预缓存字体。
+
+**图片资源限制**
+
+- 只保证抓取 `<img>` 并保留内联 SVG；外部 CSS `background` / `mask` 图片不主动抓取。
+- `<img>` 外链须可 CORS 读取。上限：单图 20 MiB、总量 64 MiB、最多 64 个不同图片地址、并发 4、单次超时 30 秒；流式读取，越界立即取消。
+
+**Takumi CSS 与分页边界**
+
+- 基础背景色经 `backgroundColor` 铺满整张纸（含 margin）；主题渐变/纹理仍在 `#bm-md`，仅覆盖正文区域。
+- 原生四边 margin：上/下 45、左/右 30；不注入 fixed 页面背景，不用根 padding 模拟分页。
+- 仅使用 Takumi 支持的 CSS 子集与 break 规则分页；不执行预览中的 JavaScript，不再维护 Canvas/SVG 手工切页。
 
 ---
 
@@ -197,7 +231,7 @@ create、rename、delete 会在 IndexedDB 事务内读取最新 catalog；create
 
 旧版 `localStorage['bm.md.files']` 仅用于一次性迁移到 v2 catalog，迁移成功后删除。
 
-`src/lib/file-importer.ts` 统一识别 `.md`、`.markdown`、`.mdown`、`.mkd`（大小写不敏感），HTML 文件经 Markdown Worker 转换。批量导入按原始顺序创建标签；`filesStore.createFile()` 创建文件后立即将其设为活动文件，因此最后创建的文件保持激活。
+`src/lib/file-importer.ts` 统一分类导入文件：直接读取 `.md`、`.markdown`、`.mdown`、`.mkd`（大小写不敏感），HTML 经 Markdown Worker 转换；Word、PowerPoint、Excel、OpenDocument、RTF、EPUB、CSV、PDF 等文档则通过 `src/lib/document/browser.ts` 串行发送到文档 Worker，由 AnyDoc WASM 转换为 Markdown。可转换文档单个限制为 20MB，超限会在进入 Worker 前拒绝。批量导入按原始顺序创建标签；`filesStore.createFile()` 创建文件后立即将其设为活动文件，因此最后创建的文件保持激活。
 
 ### 云端存储（图片上传）
 
@@ -214,12 +248,15 @@ create、rename、delete 会在 IndexedDB 事务内读取最新 catalog；create
 │  └─ false → DCStorage (默认图床)                              │
 ├──────────────────────────────────────────────────────────────┤
 │  环境变量                                                     │
-│  ├─ S3_ACCESS_KEY_ID                                         │
-│  ├─ S3_SECRET_ACCESS_KEY                                     │
-│  ├─ S3_ENDPOINT                                              │
-│  └─ S3_BUCKET                                                │
+│  ├─ S3 必需：S3_ACCESS_KEY_ID                                 │
+│  ├─ S3 必需：S3_SECRET_ACCESS_KEY                             │
+│  ├─ S3 必需：S3_ENDPOINT                                     │
+│  ├─ S3 可选：S3_BUCKET、S3_REGION、S3_PUBLIC_BASE_URL         │
+│  └─ DC 可选：DC_UPLOAD_URL                                   │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+只有 `S3_ACCESS_KEY_ID`、`S3_SECRET_ACCESS_KEY`、`S3_ENDPOINT` 同时存在时才判定启用 S3。`S3_BUCKET` 可用于拼接上传路径，`S3_REGION` 默认 `auto`，`S3_PUBLIC_BASE_URL` 可指定返回给客户端的公开地址；未启用 S3 时使用 DC 图床，`DC_UPLOAD_URL` 可覆盖其默认上传地址。
 
 ---
 
@@ -249,11 +286,12 @@ create、rename、delete 会在 IndexedDB 事务内读取最新 catalog；create
 
 ```
 __root.tsx (HTML 文档结构、全局 Provider)
-└── _layout.tsx (主布局：编辑器 | 预览器 | 底栏)
-    ├── _layout.index.tsx (首页)
-    ├── _layout.about.tsx (关于弹窗)
-    ├── _layout.docs.mcp.tsx (MCP 弹窗)
-    └── _layout.docs.skill.tsx (Skill 弹窗)
+├── _layout.tsx (主布局：编辑器 | 预览器 | 底栏)
+│   ├── _layout.index.tsx (首页)
+│   ├── _layout.about.tsx (关于弹窗)
+│   ├── _layout.docs.mcp.tsx (MCP 弹窗)
+│   └── _layout.docs.skill.tsx (Skill 弹窗)
+└── docs.tsx (root-level API 文档 sibling)
 ```
 
 ---
@@ -277,6 +315,7 @@ Markdown 渲染在 Web Worker 中执行，避免阻塞主线程：
 - 使用 oRPC 的 Web Workers Adapter
 - 支持双向通信
 - 类型安全的 RPC 调用
+- 可转换文档使用独立的文档 Worker，通过 AnyDoc WASM 输出 Markdown；客户端串行提交任务并设置超时，避免转换阻塞 UI 或叠加 WASM 内存峰值
 
 ---
 

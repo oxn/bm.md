@@ -1,14 +1,14 @@
 /* ============================================
    Terminal - 命令行界面风格
    Cyber-Industrial / Hacker / System-Level
-   深色背景 + 经典绿色荧光 + CRT 美学
+   深色背景 + 经典绿色荧光，纯色无扫描线
    ============================================ */
 
 /* 配色定义（硬编码）
    背景色: #0a0a0a (深黑)
    主绿色: #33ff00 (终端绿/磷光绿)
    暗绿色: #1f521f (边框/暗色)
-   亮绿色: #2de02d, #28c928, #22aa22 (H2-H4 渐变)
+   亮绿色: #2de02d, #28c928, #22aa22 (H2-H4 逐级变化)
    琥珀色: #ffb000 (警告/强调)
    青色: #00ffff (链接/变量)
    品红: #ff00ff (重要)
@@ -26,15 +26,6 @@
   font-size: 15px;
   line-height: 1.6;
   padding: 1.5em 1em;
-  text-shadow: 0 0 5px rgba(51, 255, 0, 0.4);
-  /* CRT 扫描线效果 */
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
-  );
 }
 
 /* ============================================
@@ -59,7 +50,6 @@
 #bm-md h1 {
   font-size: 1.75em;
   color: #33ff00;
-  text-shadow: 0 0 8px rgba(51, 255, 0, 0.6);
   padding-bottom: 0.3em;
   border-bottom: 2px solid #33ff00;
 }
@@ -73,7 +63,6 @@
 #bm-md h2 {
   font-size: 1.4em;
   color: #2de02d;
-  text-shadow: 0 0 6px rgba(45, 224, 45, 0.5);
   padding-left: 0.5em;
   border-left: 3px solid #2de02d;
 }
@@ -87,7 +76,6 @@
 #bm-md h3 {
   font-size: 1.2em;
   color: #28c928;
-  text-shadow: 0 0 5px rgba(40, 201, 40, 0.4);
 }
 
 #bm-md h3::before {
@@ -99,8 +87,7 @@
 #bm-md h4,
 #bm-md h5,
 #bm-md h6 {
-  color: #22aa22;
-  text-shadow: 0 0 4px rgba(34, 170, 34, 0.3);
+  color: #1a881a;
 }
 
 #bm-md h4 {
@@ -157,7 +144,6 @@
 #bm-md b {
   font-weight: 700;
   color: #ffb000;
-  text-shadow: 0 0 5px rgba(255, 176, 0, 0.5);
 }
 
 /* 斜体 - 青色 */
@@ -183,6 +169,37 @@
   color: #0a0a0a;
   padding: 0.1em 0.3em;
   text-shadow: none;
+}
+
+/* 反色高亮内统一使用深色前景，避免终端语义色与琥珀底色混淆 */
+#bm-md mark strong,
+#bm-md mark b,
+#bm-md mark em,
+#bm-md mark i,
+#bm-md mark small,
+#bm-md mark sup,
+#bm-md mark sub,
+#bm-md mark q,
+#bm-md mark var {
+  color: #0a0a0a;
+}
+
+#bm-md mark del,
+#bm-md mark s,
+#bm-md mark strike {
+  color: #0a0a0a;
+  text-decoration-color: #0a0a0a;
+}
+
+#bm-md mark q::before,
+#bm-md mark q::after {
+  color: #0a0a0a;
+}
+
+#bm-md mark a,
+#bm-md mark a:hover {
+  color: #0a0a0a;
+  text-decoration-color: #0a0a0a;
 }
 
 #bm-md small {
@@ -264,13 +281,11 @@
   text-decoration: underline;
   text-decoration-color: #006666;
   text-underline-offset: 3px;
-  text-shadow: 0 0 5px rgba(0, 255, 255, 0.4);
 }
 
 #bm-md a:hover {
   color: #33ff00;
   text-decoration-color: #33ff00;
-  text-shadow: 0 0 8px rgba(51, 255, 0, 0.6);
 }
 
 /* ============================================
@@ -441,7 +456,6 @@
   border: none;
   font-size: 0.875em;
   line-height: 1.5;
-  text-shadow: 0 0 3px rgba(51, 255, 0, 0.3);
 }
 
 /* ============================================
@@ -472,7 +486,6 @@
   font-weight: 700;
   color: #ffb000;
   text-transform: uppercase;
-  text-shadow: 0 0 3px rgba(255, 176, 0, 0.3);
 }
 
 #bm-md tbody tr:nth-child(even) {
@@ -516,9 +529,8 @@
 #bm-md hr {
   margin: 1.5em 0;
   border: none;
-  height: 3px;
-  background-color: #1f521f;
-  background: repeating-linear-gradient(90deg, #1f521f 0px, #1f521f 4px, transparent 4px, transparent 8px);
+  border-top: 1px dashed #1f521f;
+  height: 0;
 }
 
 /* ============================================
@@ -528,10 +540,8 @@
 #bm-md img {
   display: block;
   max-width: 100%;
-  height: auto;
   border: 1px solid #1f521f;
   margin: 1em 0;
-  filter: saturate(0.8) contrast(1.1);
 }
 
 #bm-md picture {
@@ -617,7 +627,6 @@
   font-weight: 700;
   color: #ffb000;
   margin-top: 0.5em;
-  text-shadow: 0 0 3px rgba(255, 176, 0, 0.3);
 }
 
 #bm-md dt::before {
@@ -651,7 +660,6 @@
   border: 1px solid #33ff00;
   color: #33ff00;
   font-weight: 600;
-  text-shadow: 0 0 3px rgba(51, 255, 0, 0.4);
 }
 
 /* ============================================
@@ -792,7 +800,6 @@
   cursor: pointer;
   color: #ffb000;
   padding: 0.25em 0;
-  text-shadow: 0 0 3px rgba(255, 176, 0, 0.3);
 }
 
 #bm-md summary::before {

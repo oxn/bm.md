@@ -66,14 +66,13 @@
   border-bottom: 2px solid #2e5d4e;
 }
 
-/* H2 - 章节标题，精致左边框 */
+/* H2 - 章节标题，精致左边框 + 纯色浅绿底 */
 #bm-md h2 {
   font-size: 1.5em;
   color: #2e5d4e;
   padding: 0.25em 0.75em;
   border-left: 3px solid #2e5d4e;
   background-color: rgba(46, 93, 78, 0.06);
-  background: linear-gradient(90deg, rgba(46, 93, 78, 0.06) 0%, transparent 100%);
 }
 
 /* H3 - 科属分类标题 */
@@ -194,7 +193,7 @@
 
 /* 行内引用 */
 #bm-md q {
-  quotes: '"' '"' '' ' ' '';
+  quotes: '"' '"';
   color: #2a2520;
 }
 
@@ -337,7 +336,6 @@
   padding: 1em 1.2em;
   background-color: #f0ede6;
   border-left: 3px solid #2e5d4e;
-  border-right: 1px solid #d4cfc6;
   color: #3a3530;
 }
 
@@ -404,12 +402,6 @@
   border: 1px solid #2e5d4e;
 }
 
-/* 表头首行样式（替代 thead） */
-#bm-md tr:first-child th {
-  background-color: #2e5d4e;
-  color: #f7f5f0;
-}
-
 #bm-md th,
 #bm-md td {
   padding: 0.6em 0.85em;
@@ -421,6 +413,7 @@
   font-weight: 600;
   color: #2e5d4e;
   background-color: rgba(46, 93, 78, 0.08);
+  border-bottom: 2px solid #2e5d4e;
 }
 
 #bm-md tbody tr:nth-child(even) {
@@ -465,7 +458,6 @@
   border: none;
   height: 1px;
   background-color: #2e5d4e;
-  background: linear-gradient(90deg, transparent 0%, #d4cfc6 15%, #2e5d4e 50%, #d4cfc6 85%, transparent 100%);
 }
 
 /* ============================================
@@ -476,7 +468,6 @@
 #bm-md img {
   display: block;
   max-width: 100%;
-  height: auto;
   margin: 1.1em 0;
   border: 1px solid #d4cfc6;
   box-shadow: 0 2px 8px rgba(42, 37, 32, 0.08);

@@ -1,6 +1,7 @@
 import type { SupportedPlatform } from '@/config'
 import type { EditorBooleanKey, EditorBooleanSetterKey } from '@/stores/editor'
 import type { InfographicSettings } from '@/stores/preview'
+import type { MarkdownStyleId } from '@/themes/markdown-style/metadata'
 import type { MermaidThemeId } from '@/themes/mermaid-theme'
 import { useNavigate } from '@tanstack/react-router'
 import { useTheme } from 'next-themes'
@@ -8,17 +9,13 @@ import { toast } from 'sonner'
 import { usePlatformCopy } from '@/components/markdown/previewer/action-bar/use-platform-copy'
 import { isPreviewReadyNow } from '@/components/markdown/previewer/preview-ready'
 import { editorCommandConfig, platformConfig } from '@/config'
-import {
-  copyImage,
-  copyPlatform,
-  exportImage,
-  exportMarkdown,
-  exportPdf,
-  formatMarkdown,
-  handleImportFiles,
-  printPreview,
-  toggleTheme,
-} from '@/lib/actions'
+import { copyPlatform } from '@/lib/actions/copy-platform'
+import { copyImage, exportImage } from '@/lib/actions/export-image'
+import { exportMarkdown } from '@/lib/actions/export-markdown'
+import { exportPdf, printPreview } from '@/lib/actions/export-pdf'
+import { formatMarkdown } from '@/lib/actions/format'
+import { handleImportFiles } from '@/lib/actions/import-file'
+import { toggleTheme } from '@/lib/actions/toggle-theme'
 import { trackEvent } from '@/lib/analytics'
 import { useCommandPaletteStore } from '@/stores/command-palette'
 import { useEditorStore } from '@/stores/editor'
@@ -31,7 +28,7 @@ import {
 import { useHotkeys } from './use-hotkeys'
 
 export interface CommandPaletteActions {
-  markdownStyle: string
+  markdownStyle: MarkdownStyleId
   codeTheme: string
   mermaidTheme: MermaidThemeId
   infographic: InfographicSettings
@@ -56,7 +53,7 @@ export interface CommandPaletteActions {
   handleExternalLink: (url: string) => void
   isSettingEnabled: (storeKey: EditorBooleanKey) => boolean
   handleToggleSetting: (storeKey: EditorBooleanKey, setterKey: EditorBooleanSetterKey) => void
-  handleSelectMarkdownStyle: (id: string) => void
+  handleSelectMarkdownStyle: (id: MarkdownStyleId) => void
   handleSelectCodeTheme: (id: string) => void
   handleSelectMermaidTheme: (id: MermaidThemeId) => void
   handleSelectInfographicTheme: (id: string) => void
@@ -248,7 +245,7 @@ export function useCommandPaletteActions(setResetDialogOpen: (open: boolean) => 
     setter(!currentValue)
   }
 
-  const handleSelectMarkdownStyle = (id: string) => {
+  const handleSelectMarkdownStyle = (id: MarkdownStyleId) => {
     setMarkdownStyle(id)
     resetSubMenu()
     closePanel()
